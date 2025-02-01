@@ -1,4 +1,4 @@
-import React from "react";
+import ChordSheetJS from "chordsheetjs";
 import "./ContentArea.css";
 
 const ContentArea = ({
@@ -17,6 +17,9 @@ const ContentArea = ({
     );
   }
 
+  let song = null;
+  const formatter = new ChordSheetJS.TextFormatter();
+  const parser = new ChordSheetJS.ChordProParser();
   if (!selectedSong) {
     return (
       <div className="content-area">
@@ -24,6 +27,9 @@ const ContentArea = ({
         <p>Please select a song from the sidebar to view its details.</p>
       </div>
     );
+  } else {
+    song = parser.parse(selectedSong?.content);
+    console.log(song);
   }
 
   return (
@@ -32,9 +38,7 @@ const ContentArea = ({
         <h2>{selectedSong.name || "Untitled Song"}</h2>
         <p>By: {selectedSong.author || "Unknown Author"}</p>
         <p>{selectedSong.subTitle || "No Subtitle Available"}</p>
-        <pre>
-          {selectedSong.content || "No content available for this song."}
-        </pre>
+        <pre>{song && formatter.format(song)}</pre>
       </div>
       <div className="navigation">
         <button onClick={onPrevious} disabled={currentIndex === 0}>

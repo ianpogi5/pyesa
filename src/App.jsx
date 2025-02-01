@@ -40,8 +40,9 @@ const App = () => {
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   // Handle file click: Fetch file content (songs)
-  const handleFileClick = async (filename) => {
+  const handleFileClick = async (index) => {
     try {
+      const filename = files[index];
       const response = await fetch(`${API_BASE_URL}/files/${filename}`);
       const data = await response.json();
       setFileContent(data.songs);
