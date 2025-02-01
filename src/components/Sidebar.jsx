@@ -14,7 +14,7 @@ const Sidebar = ({ items, isSongList, onItemClick, onBack }) => {
         {items.map((item, index) => (
           <li
             key={index}
-            onClick={() => onItemClick(item)}
+            onClick={() => onItemClick(index)}
             className="sidebar-item-card"
           >
             {isSongList ? (

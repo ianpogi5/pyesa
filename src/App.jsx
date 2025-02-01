@@ -5,15 +5,15 @@ import "./App.css";
 
 const App = () => {
   const [files, setFiles] = useState([]);
-  const [fileContent, setFileContent] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedSong, setSelectedSong] = useState(null);
+  const [fileContent, setFileContent] = useState(null); // List of songs in the selected file
+  const [selectedFile, setSelectedFile] = useState(null); // File name
+  const [currentSongIndex, setCurrentSongIndex] = useState(null); // Index of the currently selected song
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // Fetch the list of files on initial load
+  // Load the list of files on initial render
   useEffect(() => {
     const fetchFiles = async () => {
       try {
@@ -21,7 +21,7 @@ const App = () => {
         const data = await response.json();
         setFiles(data.files);
       } catch (error) {
-        console.error("Error fetching files:", error);
+        console.error("Error fetching file list:", error);
       }
     };
 
@@ -36,32 +36,48 @@ const App = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Toggle the sidebar (for mobile responsiveness)
+  // Sidebar toggle
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Fetch the content of a file when it is selected
+  // Handle file click: Fetch file content (songs)
   const handleFileClick = async (filename) => {
     try {
       const response = await fetch(`${API_BASE_URL}/files/${filename}`);
       const data = await response.json();
       setFileContent(data.songs);
       setSelectedFile(filename);
+      setCurrentSongIndex(null); // Reset song selection when opening a new file
     } catch (error) {
       console.error("Error fetching file content:", error);
     }
   };
 
-  // Handle song selection
-  const handleSongClick = (song) => {
-    setSelectedSong(song);
-    if (isSmallScreen) setIsSidebarOpen(false); // Hide the sidebar for mobile view
+  // Handle song selection by index
+  const handleSongClick = (index) => {
+    console.log("Selected Song Index:", index);
+    console.log("Selected Song Data:", fileContent[index]);
+    setCurrentSongIndex(index);
+    if (isSmallScreen) setIsSidebarOpen(false); // Hide sidebar on small screens
   };
 
-  // Handle returning to the file list
+  // Handle navigation via Previous/Next buttons
+  const goToPreviousSong = () => {
+    if (currentSongIndex > 0) {
+      setCurrentSongIndex((prevIndex) => prevIndex - 1);
+    }
+  };
+
+  const goToNextSong = () => {
+    if (currentSongIndex < fileContent.length - 1) {
+      setCurrentSongIndex((prevIndex) => prevIndex + 1);
+    }
+  };
+
+  // Handle back button to return to file list
   const goBackToFileList = () => {
     setFileContent(null);
     setSelectedFile(null);
-    setSelectedSong(null);
+    setCurrentSongIndex(null);
   };
 
   return (
@@ -80,7 +96,14 @@ const App = () => {
             onBack={selectedFile ? goBackToFileList : null}
           />
         )}
-        <ContentArea selectedFile={selectedFile} selectedSong={selectedSong} />
+        <ContentArea
+          selectedFile={selectedFile}
+          selectedSong={fileContent ? fileContent[currentSongIndex] : null}
+          currentIndex={currentSongIndex}
+          totalSongs={fileContent ? fileContent.length : 0}
+          onPrevious={goToPreviousSong}
+          onNext={goToNextSong}
+        />
       </div>
     </div>
   );
