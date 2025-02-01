@@ -54,8 +54,6 @@ const App = () => {
 
   // Handle song selection by index
   const handleSongClick = (index) => {
-    console.log("Selected Song Index:", index);
-    console.log("Selected Song Data:", fileContent[index]);
     setCurrentSongIndex(index);
     if (isSmallScreen) setIsSidebarOpen(false); // Hide sidebar on small screens
   };
