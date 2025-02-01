@@ -24,7 +24,7 @@ const Sidebar = ({ items, isSongList, onItemClick, onBack }) => {
                 {item.author && <p className="author">{item.author}</p>}
               </div>
             ) : (
-              <span>{item}</span>
+              <span>{item.replace(".json", "")}</span>
             )}
           </li>
         ))}
