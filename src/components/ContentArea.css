@@ -11,7 +11,7 @@
 
 
 .content-area pre {
-  background-color: #ffffff;
+  background-color: #ffffff !important;
   padding: 16px;
   border: 1px solid #ddd;
   white-space: pre-wrap;
