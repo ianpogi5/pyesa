@@ -36,8 +36,8 @@ const ContentArea = ({
     <div className="content-area">
       <div className="song-details">
         <h2>{selectedSong.name || "Untitled Song"}</h2>
+        <p>Album: {selectedSong.subTitle || "No Subtitle Available"}</p>
         <p>By: {selectedSong.author || "Unknown Author"}</p>
-        <p>{selectedSong.subTitle || "No Subtitle Available"}</p>
         <pre>{song && formatter.format(song)}</pre>
       </div>
       <div className="navigation">
