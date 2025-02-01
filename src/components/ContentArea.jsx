@@ -1,3 +1,4 @@
+import { useState } from "react";
 import ChordSheetJS from "chordsheetjs";
 import "./ContentArea.css";
 
@@ -9,6 +10,18 @@ const ContentArea = ({
   onPrevious,
   onNext,
 }) => {
+  const [fontSize, setFontSize] = useState(16); // Default font size in pixels
+
+  // Increase font size (limit to 32px)
+  const increaseFontSize = () => {
+    setFontSize((prevFontSize) => Math.min(prevFontSize + 2, 32));
+  };
+
+  // Decrease font size (limit to 12px)
+  const decreaseFontSize = () => {
+    setFontSize((prevFontSize) => Math.max(prevFontSize - 2, 12));
+  };
+
   if (!selectedFile) {
     return (
       <div className="content-area">
@@ -38,7 +51,18 @@ const ContentArea = ({
         <h2>{selectedSong.name || "Untitled Song"}</h2>
         <p>Album: {selectedSong.subTitle || "No Subtitle Available"}</p>
         <p>By: {selectedSong.author || "Unknown Author"}</p>
-        <pre>{song && formatter.format(song)}</pre>
+        <div className="content-controls">
+          <button onClick={decreaseFontSize} disabled={fontSize <= 12}>
+            A-
+          </button>
+          <span>Font Size: {fontSize}px</span>
+          <button onClick={increaseFontSize} disabled={fontSize >= 32}>
+            A+
+          </button>
+        </div>
+        <pre style={{ fontSize: `${fontSize}px` }}>
+          {song && formatter.format(song)}
+        </pre>
       </div>
       <div className="navigation">
         <button onClick={onPrevious} disabled={currentIndex === 0}>
