@@ -1,17 +1,31 @@
+import React from "react";
 import "./Sidebar.css";
 
-const Sidebar = ({ files, selectedFile, onSelectFile }) => {
+const Sidebar = ({ items, isSongList, onItemClick, onBack }) => {
   return (
     <div className="sidebar">
-      <h3>Files</h3>
+      {onBack && (
+        <button className="back-button" onClick={onBack}>
+          &larr; Back
+        </button>
+      )}
+      <h3>{isSongList ? "Songs" : "Files"}</h3>
       <ul>
-        {files.map((file) => (
+        {items.map((item, index) => (
           <li
-            key={file}
-            className={file === selectedFile ? "selected" : ""}
-            onClick={() => onSelectFile(file)}
+            key={index}
+            onClick={() => onItemClick(item)}
+            className="sidebar-item-card"
           >
-            {file}
+            {isSongList ? (
+              <div className="song-details">
+                <h4>{item.name || `Song #${index + 1}`}</h4>
+                {item.subTitle && <p className="sub-title">{item.subTitle}</p>}
+                {item.author && <p className="author">{item.author}</p>}
+              </div>
+            ) : (
+              <span>{item}</span>
+            )}
           </li>
         ))}
       </ul>

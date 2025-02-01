@@ -1,35 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "./ContentArea.css";
 
-const ContentArea = ({ selectedFile }) => {
-  const [fileContent, setFileContent] = useState(null);
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const ContentArea = ({ selectedFile, selectedSong }) => {
+  if (selectedSong) {
+    return (
+      <div className="content-area">
+        <h2>{selectedSong.name || "Untitled Song"}</h2>
+        {selectedSong.subTitle && <p>Album: {selectedSong.subTitle}</p>}
+        {selectedSong.author && <p>By: {selectedSong.author} </p>}
+        <pre>
+          {selectedSong.content || "No content available for this song."}
+        </pre>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    const fetchFileContent = async () => {
-      if (selectedFile) {
-        try {
-          const response = await fetch(`${API_BASE_URL}/files/${selectedFile}`);
-          const data = await response.text();
-          setFileContent(data);
-        } catch (error) {
-          console.error("Error fetching file content:", error);
-        }
-      } else {
-        setFileContent(null);
-      }
-    };
-
-    fetchFileContent();
-  }, [selectedFile, API_BASE_URL]);
+  if (selectedFile) {
+    return (
+      <div className="content-area">
+        <h2>File: {selectedFile}</h2>
+        <p>Please select a song from the sidebar to view its details.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="content-area">
-      {selectedFile ? (
-        <pre>{fileContent}</pre>
-      ) : (
-        <p>Please select a file from the sidebar to view its contents.</p>
-      )}
+      <p>Please select a file from the sidebar to view its contents.</p>
     </div>
   );
 };
