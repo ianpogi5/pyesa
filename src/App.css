@@ -22,33 +22,57 @@ p, pre {
   flex-direction: column;
 }
 
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  position: fixed;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* App Title */
+.app-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+  padding-right: 10px;
+}
+
 /* Sidebar Toggle Button */
 .sidebar-toggle {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  z-index: 1000;
+  background: none; /* Transparent background */
   border: none;
-  background: #007bff;
-  color: white;
-  font-size: 14px;
-  padding: 10px 15px;
-  border-radius: 5px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333; /* Make the icon dark by default */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .sidebar-toggle:hover {
-  background: #0056b3;
-  color: white;
+  background-color: #f0f0f0;
+  color: #007bff;
 }
 
 /* Layout Container */
 .layout {
   display: flex;
   height: 100%;
-  transition: flex-direction 0.3s ease;
+  transition: all 0.3s ease;
+  margin-top: 50px;
+}
+
+
+.layout.sidebar-hidden .sidebar {
+  display: none;
 }
 
 /* Sidebar */

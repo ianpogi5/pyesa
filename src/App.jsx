@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { FiMenu } from "react-icons/fi";
 import Sidebar from "./components/Sidebar";
 import ContentArea from "./components/ContentArea";
 import "./App.css";
@@ -82,9 +83,12 @@ const App = () => {
   return (
     <div className="app">
       {isSmallScreen && (
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
-          {isSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
-        </button>
+        <div className="app-header">
+          <h1 className="app-title">PG Choir - Pyesa</h1>
+          <button className="sidebar-toggle" onClick={toggleSidebar}>
+            <FiMenu size={14} />
+          </button>
+        </div>
       )}
       <div className={`layout ${isSidebarOpen ? "" : "sidebar-hidden"}`}>
         {isSidebarOpen && (
