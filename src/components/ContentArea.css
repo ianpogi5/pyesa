@@ -16,7 +16,7 @@
   border: 1px solid #ddd;
   white-space: pre-wrap;
   margin-top: 20px;
-  color: #0d0d0d;
+  color: #0d0d0d !important;
 }
 
 .content-area p {
