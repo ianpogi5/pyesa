@@ -82,14 +82,14 @@ const App = () => {
 
   return (
     <div className="app">
-      {isSmallScreen && (
-        <div className="app-header">
-          <h1 className="app-title">PG Choir - Pyesa</h1>
+      <div className="app-header">
+        <h1 className="app-title">PG Choir - Pyesa</h1>
+        {isSmallScreen && (
           <button className="sidebar-toggle" onClick={toggleSidebar}>
             <FiMenu size={14} />
           </button>
-        </div>
-      )}
+        )}
+      </div>
       <div className={`layout ${isSidebarOpen ? "" : "sidebar-hidden"}`}>
         {isSidebarOpen && (
           <Sidebar

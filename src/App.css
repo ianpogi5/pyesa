@@ -22,12 +22,13 @@ p, pre {
   flex-direction: column;
 }
 
+/* Header container for title and toggle button */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background-color: #ffffff;
+  background-color: #f8f9fa;
   border-bottom: 1px solid #ddd;
   position: fixed;
   width: 100%;
@@ -40,12 +41,10 @@ p, pre {
   font-weight: bold;
   color: #333;
   margin: 0;
-  padding-right: 10px;
 }
-
 /* Sidebar Toggle Button */
 .sidebar-toggle {
-  background: none; /* Transparent background */
+  background: none;
   border: none;
   cursor: pointer;
   padding: 8px;
@@ -53,23 +52,21 @@ p, pre {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333; /* Make the icon dark by default */
+  color: #333; /* Default icon color */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .sidebar-toggle:hover {
-  background-color: #f0f0f0;
-  color: #007bff;
+  background-color: #f0f0f0; /* Lighter background */
+  color: #007bff; /* Blue icon */
 }
 
-/* Layout Container */
+/* Space between app-header and layout below */
 .layout {
   display: flex;
-  height: 100%;
   transition: all 0.3s ease;
-  margin-top: 50px;
+  margin-top: 50px; /* Header height */
 }
-
 
 .layout.sidebar-hidden .sidebar {
   display: none;
