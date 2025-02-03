@@ -57,6 +57,8 @@ const App = () => {
   // Handle song selection by index
   const handleSongClick = (index) => {
     setCurrentSongIndex(index);
+    // Scroll to the top of the content area when a song is selected from the sidebar
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (isSmallScreen) setIsSidebarOpen(false); // Hide sidebar on small screens
   };
 
@@ -65,12 +67,18 @@ const App = () => {
     if (currentSongIndex > 0) {
       setCurrentSongIndex((prevIndex) => prevIndex - 1);
     }
+
+    // Scroll to the top on navigation
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goToNextSong = () => {
     if (currentSongIndex < fileContent.length - 1) {
       setCurrentSongIndex((prevIndex) => prevIndex + 1);
     }
+
+    // Scroll to the top on navigation
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle back button to return to file list
