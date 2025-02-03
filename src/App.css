@@ -33,6 +33,7 @@ p, pre {
   border-bottom: 1px solid #ddd;
   position: fixed;
   width: 100%;
+  max-width: calc(100vw - 30px);
   z-index: 1000;
 }
 
@@ -45,21 +46,32 @@ p, pre {
 }
 /* Sidebar Toggle Button */
 .sidebar-toggle {
-  background: none;
+  padding: 10px 14px;
+  background-color: #007bff;
+  color: white;
   border: none;
-  cursor: pointer;
-  padding: 8px;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #333; /* Default icon color */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: background-color 0.3s ease;
 }
 
 .sidebar-toggle:hover {
   background-color: #f0f0f0; /* Lighter background */
   color: #007bff; /* Blue icon */
+}
+
+.install-pwa {
+  background: #00bf7d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
 }
 
 /* Space between app-header and layout below */
@@ -73,12 +85,15 @@ p, pre {
   display: none;
 }
 
+.layout.sidebar-hidden .content-area {
+  display: block;
+}
 
 /* Adjustments for Mobile */
 @media (max-width: 768px) {
   .sidebar {
-    flex: 0 0 auto;
-    max-width: 100%;
+    flex: 0 0 100%;
+    max-width: calc(100vw - 40px);
     border-right: none;
     border-bottom: 1px solid #ddd;
   }
@@ -86,4 +101,9 @@ p, pre {
   .sidebar li {
     padding: 10px 14px;
   }
+
+  .layout .content-area {
+    display: none;
+  }
+
 }

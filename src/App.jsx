@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { FiMenu } from "react-icons/fi";
 import Sidebar from "./components/Sidebar";
 import ContentArea from "./components/ContentArea";
+import InstallPWA from "./components/InstallPWA";
 import "./App.css";
 
 const App = () => {
@@ -91,7 +92,11 @@ const App = () => {
   return (
     <div className="app">
       <div className="app-header">
-        <h1 className="app-title">PG Choir - Pyesa</h1>
+        <h1 className="app-title">
+          PG Choir - Pyesa
+          <InstallPWA />
+        </h1>
+
         {isSmallScreen && (
           <button className="sidebar-toggle" onClick={toggleSidebar}>
             <FiMenu size={14} />
