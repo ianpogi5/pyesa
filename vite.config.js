@@ -28,6 +28,24 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/pyesa\.kdc\.sh\/api.*$/, // Adjust to match your API
+            handler: "NetworkFirst", // Use 'NetworkFirst' if you want fresh data or CacheFirst
+            options: {
+              cacheName: "api-cache",
+              expiration: {
+                maxAgeSeconds: 60 * 60 * 24 * 365, // Cache for 1 year
+                maxEntries: 1000, // Store up to 50 requests
+              },
+              cacheableResponse: {
+                statuses: [200], // Only cache successful responses
+              },
+            },
+          },
+        ],
+      },
       devOptions: {
         enabled: true, // Enables PWA in development mode
       },
