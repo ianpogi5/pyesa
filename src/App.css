@@ -3,8 +3,8 @@ body, html {
   margin: 0;
   padding: 0;
   font-family: 'Montserrat', sans-serif;
-  color: #333;
-  background-color: #f5f5f5;
+  color: #cdd6f4;
+  background-color: #1e1e2e;
   line-height: 1.6;
 }
 
@@ -29,8 +29,8 @@ p, pre {
   align-items: center;
   justify-content: space-between;
   padding: 10px 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #ddd;
+  background-color: #1e1e2e;
+  border-bottom: 1px solid #313244;
   position: fixed;
   width: 100%;
   max-width: calc(100vw - 30px);
@@ -41,14 +41,14 @@ p, pre {
 .app-title {
   font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: #cdd6f4;
   margin: 0;
 }
 /* Sidebar Toggle Button */
 .sidebar-toggle {
   padding: 10px 14px;
-  background-color: #007bff;
-  color: white;
+  background-color: #89b4fa;
+  color: #1e1e2e;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -58,13 +58,13 @@ p, pre {
 }
 
 .sidebar-toggle:hover {
-  background-color: #f0f0f0; /* Lighter background */
-  color: #007bff; /* Blue icon */
+  background-color: #74c7ec; /* Lighter background */
+  color: #1e1e2e; /* Blue icon */
 }
 
 .install-pwa {
-  background: #00bf7d;
-  color: white;
+  background: #a6e3a1;
+  color: #1e1e2e;
   border: none;
   border-radius: 4px;
   margin-left: 10px;
@@ -95,7 +95,7 @@ p, pre {
     flex: 0 0 100%;
     max-width: calc(100vw - 40px);
     border-right: none;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #313244;
   }
 
   .sidebar li {

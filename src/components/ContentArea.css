@@ -1,7 +1,8 @@
 .content-area {
   flex: 1;
   padding: 16px;
-  background: #f9fafb;
+  background: #181825;
+  color: 	#cdd6f4;
   height: 100%;
   overflow-y: auto;
   display: block;
@@ -17,25 +18,18 @@
 
 .content-area pre {
   font-family: 'Roboto Mono', 'Courier New', monospace;
-  background-color: #ffffff !important;
+  background-color: #1e1e2e !important;
   padding: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid #313244;
   border-radius: 4px;
   white-space: pre-wrap;
   margin-top: 20px;
-  color: #0d0d0d !important;
+  color: #cdd6f4 !important;
 }
 
 .content-area p {
   font-size: 16px;
-  color: #333;
-}
-
-.content-area {
-  flex: 1;
-  padding: 20px;
-  background: #ffffff;
-  overflow-y: auto;
+  color: #cdd6f4;
 }
 
 .content-controls {
@@ -48,8 +42,8 @@
 }
 
 .content-controls button {
-  background: #007bff;
-  color: white;
+  background: #89dceb;
+  color: #1e1e2e;
   border: none;
   border-radius: 4px;
   padding: 5px 10px;
@@ -59,12 +53,21 @@
 }
 
 .content-controls button:disabled {
-  background: #ccc;
+  background: #9399b2;
   cursor: not-allowed;
 }
 
 .content-controls button:hover:not(:disabled) {
-  background: #0056b3;
+  background: #89b4fa;
+}
+
+.content-controls .toggleLyrics {
+  background: #9399b2;
+  color: #1e1e2e;
+}
+.content-controls .toggleLyricEnabled {
+  background: #fab387;
+  color: #1e1e2e;
 }
 
 .song-details {
@@ -77,28 +80,18 @@
   margin-bottom: 10px;
 }
 
-.song-details pre {
-  font-family: 'Roboto Mono', monospace, sans-serif;
-  background: #f8f9fa;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
 .navigation {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
   padding-top: 10px;
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #313244;
 }
 
 .navigation button {
-  background: #007bff;
-  color: white;
+  background: #74c7ec;
+  color: #1e1e2e;
   border: none;
   padding: 10px 15px;
   border-radius: 4px;
@@ -108,10 +101,10 @@
 }
 
 .navigation button:disabled {
-  background: #ccc;
+  background: #9399b2;
   cursor: not-allowed;
 }
 
 .navigation button:hover:not(:disabled) {
-  background: #0056b3;
+  background: #89b4fa;
 }

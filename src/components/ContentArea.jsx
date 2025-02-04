@@ -80,8 +80,11 @@ const ContentArea = ({
           <button onClick={increaseFontSize} disabled={fontSize >= 32}>
             A+
           </button>
-          <button onClick={toggleLyricsOnly} disabled={fontSize >= 32}>
-            Lyrics Only
+          <button
+            onClick={toggleLyricsOnly}
+            className={lyricsOnly ? "toggleLyrics" : "toggleLyricEnabled"}
+          >
+            Chords
           </button>
         </div>
         <pre style={{ fontSize: `${fontSize}px` }}>

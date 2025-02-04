@@ -5,17 +5,27 @@
   height: 100%;
   transition: all 0.3s ease-in-out;
   padding: 20px;
-  background-color: #ffffff;
-  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid #ddd;
+  background-color: #181825;
+  box-shadow: 2px 0 4px rgba(108, 112, 134, 0.1);
+  border-right: 1px solid #313244;
   overflow-y: auto;
   z-index: 10;
+}
+
+.sidebar .back-button {
+  background-color: #fab387;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
 }
 
 .sidebar h3 {
   font-size: 20px;
   margin-bottom: 16px;
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #74c7ec;
   padding-bottom: 4px;
 }
 
@@ -31,14 +41,14 @@
   border-radius: 4px;
   font-size: 16px;
   cursor: pointer;
-  background: #f8f9fa;
+  background: #1e1e2e;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .sidebar li.selected,
 .sidebar li:hover {
-  background-color: #007bff;
-  color: white;
+  background-color: #89b4fa;
+  color: #1e1e2e;
 }
 
 .sidebar li .song-details {
@@ -46,7 +56,7 @@
 }
 
 .sidebar h4 {
-  font-size: 1.2rem;
+  font-size: 1rem;
   margin-top: 0px;
   margin-bottom: 0px;
   padding-bottom: 0px;
