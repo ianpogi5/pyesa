@@ -42,7 +42,7 @@
 }
 
 .content-controls button {
-  background: #89dceb;
+  background: #89b4fa;
   color: #1e1e2e;
   border: none;
   border-radius: 4px;
@@ -58,7 +58,7 @@
 }
 
 .content-controls button:hover:not(:disabled) {
-  background: #89b4fa;
+  background: #89dceb;
 }
 
 .content-controls .toggleLyrics {
@@ -90,7 +90,7 @@
 }
 
 .navigation button {
-  background: #74c7ec;
+  background: #89b4fa;
   color: #1e1e2e;
   border: none;
   padding: 10px 15px;
@@ -106,5 +106,5 @@
 }
 
 .navigation button:hover:not(:disabled) {
-  background: #89b4fa;
+  background: #89dceb;
 }
