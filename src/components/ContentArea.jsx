@@ -12,6 +12,7 @@ const ContentArea = ({
   onNext,
 }) => {
   const [fontSize, setFontSize] = useState(16); // Default font size in pixels
+  const [lyricsOnly, setlyricsOnly] = useState(true);
 
   // Increase font size (limit to 32px)
   const increaseFontSize = () => {
@@ -21,6 +22,10 @@ const ContentArea = ({
   // Decrease font size (limit to 12px)
   const decreaseFontSize = () => {
     setFontSize((prevFontSize) => Math.max(prevFontSize - 2, 12));
+  };
+
+  const toggleLyricsOnly = () => {
+    setlyricsOnly((prevLyricsOnly) => !prevLyricsOnly);
   };
 
   if (!selectedFile) {
@@ -43,7 +48,22 @@ const ContentArea = ({
     );
   } else {
     song = parser.parse(selectedSong?.content);
-    console.log(song);
+  }
+
+  let lyrics = "";
+  if (lyricsOnly && song) {
+    song.lines.forEach((l) => {
+      const line_parts = l.items.map((i) => i?.lyrics);
+      if (
+        line_parts.length > 0 &&
+        line_parts[0] &&
+        line_parts[0].startsWith("Intro")
+      )
+        return;
+      const line = line_parts.join("").trim();
+      if (line != "") lyrics += line + "\n";
+    });
+    lyrics.trim();
   }
 
   return (
@@ -60,9 +80,12 @@ const ContentArea = ({
           <button onClick={increaseFontSize} disabled={fontSize >= 32}>
             A+
           </button>
+          <button onClick={toggleLyricsOnly} disabled={fontSize >= 32}>
+            Lyrics Only
+          </button>
         </div>
         <pre style={{ fontSize: `${fontSize}px` }}>
-          {song && formatter.format(song)}
+          {lyricsOnly ? lyrics : song && formatter.format(song)}
         </pre>
         {selectedSong?.Url && <YouTubeEmbed url={selectedSong.Url} />}
       </div>
