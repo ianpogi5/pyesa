@@ -2,14 +2,33 @@ import React from "react";
 import "./Sidebar.css";
 
 const Sidebar = ({
+  selectedFile,
   items,
   isSongList,
   onItemClick,
   currentSongIndex,
   onBack,
 }) => {
+  let header = "";
+  if (selectedFile) {
+    const [dateStr, sunday] = selectedFile.split(" - ");
+    const date = new Date(dateStr);
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(date);
+
+    header = (
+      <>
+        <h2>{sunday.replace(".json", "")}</h2>
+        <p>{formattedDate}</p>
+      </>
+    );
+  }
   return (
     <div className="sidebar">
+      {selectedFile && header}
       <div className="sidebar-header">
         <h3>{isSongList ? "Songs" : "Files"}</h3>
         {onBack && (

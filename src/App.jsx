@@ -128,6 +128,7 @@ const App = () => {
       <div className={`layout ${isSidebarOpen ? "" : "sidebar-hidden"}`}>
         {isSidebarOpen && (
           <Sidebar
+            selectedFile={selectedFile}
             items={selectedFile ? fileContent : files}
             isSongList={!!selectedFile}
             onItemClick={selectedFile ? handleSongClick : handleFileClick}
