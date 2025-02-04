@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { FiMenu } from "react-icons/fi";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import ContentArea from "./components/ContentArea";
 import InstallPWA from "./components/InstallPWA";
@@ -12,6 +13,10 @@ const App = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(null); // Index of the currently selected song
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Navigation and URL handling
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -41,18 +46,34 @@ const App = () => {
   // Sidebar toggle
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // Handle file click: Fetch file content (songs)
-  const handleFileClick = async (index) => {
+  useEffect(() => {
+    // Check URL for the "set" query parameter and load the corresponding file
+    const params = new URLSearchParams(location.search);
+    const filename = params.get("set"); // Extract `set` param (e.g., "filename.json")
+    if (filename) {
+      loadFile(filename);
+    }
+  }, [location.search]);
+
+  const loadFile = async (filename) => {
     try {
-      const filename = files[index];
       const response = await fetch(`${API_BASE_URL}/files/${filename}`);
       const data = await response.json();
       setFileContent(data.songs);
       setSelectedFile(filename);
-      setCurrentSongIndex(null); // Reset song selection when opening a new file
+      setCurrentSongIndex(null); // Reset song selection
     } catch (error) {
       console.error("Error fetching file content:", error);
     }
+  };
+
+  // Handle file click: Fetch file content (songs)
+  const handleFileClick = async (index) => {
+    const filename = files[index];
+    // Update URL with the selected file name
+    navigate(`/?set=${filename}`);
+    // Load the file content
+    loadFile(filename);
   };
 
   // Handle song selection by index
@@ -87,6 +108,7 @@ const App = () => {
     setFileContent(null);
     setSelectedFile(null);
     setCurrentSongIndex(null);
+    navigate("/"); // Reset the URL to the base
   };
 
   return (
