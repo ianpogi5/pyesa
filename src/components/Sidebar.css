@@ -12,6 +12,14 @@
   z-index: 10;
 }
 
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #74c7ec;
+  padding-bottom: 4px;
+  margin-bottom: 16px;
+}
+
 .sidebar .back-button {
   background-color: #89b4fa;
   border: none;
@@ -24,9 +32,6 @@
 
 .sidebar h3 {
   font-size: 20px;
-  margin-bottom: 16px;
-  border-bottom: 2px solid #74c7ec;
-  padding-bottom: 4px;
 }
 
 .sidebar ul {

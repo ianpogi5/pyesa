@@ -10,12 +10,14 @@ const Sidebar = ({
 }) => {
   return (
     <div className="sidebar">
-      {onBack && (
-        <button className="back-button" onClick={onBack}>
-          &larr; Back
-        </button>
-      )}
-      <h3>{isSongList ? "Songs" : "Files"}</h3>
+      <div className="sidebar-header">
+        <h3>{isSongList ? "Songs" : "Files"}</h3>
+        {onBack && (
+          <button className="back-button" onClick={onBack}>
+            &larr; Back
+          </button>
+        )}
+      </div>
       <ul>
         {items.map((item, index) => (
           <li
