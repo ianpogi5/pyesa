@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ChordSheetJS from "chordsheetjs";
+import YouTubeEmbed from "./YouTubeEmbed";
 import "./ContentArea.css";
 
 const ContentArea = ({
@@ -63,6 +64,7 @@ const ContentArea = ({
         <pre style={{ fontSize: `${fontSize}px` }}>
           {song && formatter.format(song)}
         </pre>
+        {selectedSong?.Url && <YouTubeEmbed url={selectedSong.Url} />}
       </div>
       <div className="navigation">
         <button onClick={onPrevious} disabled={currentIndex === 0}>
