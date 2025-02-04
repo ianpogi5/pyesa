@@ -53,13 +53,21 @@ const ContentArea = ({
   let lyrics = "";
   if (lyricsOnly && song) {
     song.lines.forEach((l) => {
-      const line_parts = l.items.map((i) => i?.lyrics);
+      const line_parts = l.items.map((i) =>
+        i._name === "comment" ? `${i._value}:` : i?.lyrics
+      );
+
       if (
         line_parts.length > 0 &&
         line_parts[0] &&
         line_parts[0].startsWith("Intro")
-      )
+      ) {
         return;
+      }
+      if (line_parts.length === 0) {
+        lyrics += "\n";
+        return;
+      }
       const line = line_parts.join("").trim();
       if (line != "") lyrics += line + "\n";
     });
