@@ -1,7 +1,13 @@
 import React from "react";
 import "./Sidebar.css";
 
-const Sidebar = ({ items, isSongList, onItemClick, onBack }) => {
+const Sidebar = ({
+  items,
+  isSongList,
+  onItemClick,
+  currentSongIndex,
+  onBack,
+}) => {
   return (
     <div className="sidebar">
       {onBack && (
@@ -15,7 +21,11 @@ const Sidebar = ({ items, isSongList, onItemClick, onBack }) => {
           <li
             key={index}
             onClick={() => onItemClick(index)}
-            className="sidebar-item-card"
+            className={
+              currentSongIndex === index
+                ? "sidebar-item-card selected"
+                : "sidebar-item-card"
+            }
           >
             {isSongList ? (
               <div className="song-details">

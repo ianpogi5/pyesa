@@ -131,6 +131,7 @@ const App = () => {
             items={selectedFile ? fileContent : files}
             isSongList={!!selectedFile}
             onItemClick={selectedFile ? handleSongClick : handleFileClick}
+            currentSongIndex={currentSongIndex}
             onBack={selectedFile ? goBackToFileList : null}
           />
         )}
