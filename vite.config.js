@@ -12,8 +12,8 @@ export default defineConfig({
         name: "PG Choir - Pyesa",
         short_name: "PGC",
         description: "Choir companion app during mass.",
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
+        theme_color: "#1e1e2e",
+        background_color: "#1e1e2e",
         display: "standalone",
         icons: [
           {
