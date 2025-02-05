@@ -8,8 +8,8 @@ const Kantada = () => {
       <br />
       <br />
       <p>
-        <b>NAMUMUNO:</b> Sa Ngalan ng Ama, at ng Anak, at ng Espiritu Santo.
-        Amen.
+        <b className="leader">NAMUMUNO:</b> Sa Ngalan ng Ama, at ng Anak, at ng
+        Espiritu Santo. Amen.
       </p>
       <p>
         Panginoon kong Hesukristo, Diyos na totoo at tao namang totoo, gumawa at
@@ -42,10 +42,11 @@ const Kantada = () => {
         <b>(AWITIN ANG &#39;AMA NAMIN&#39;)</b>
       </p>
       <p>
-        <b>Tugon:</b> Kaawaan mo&#39;t patawarin ang kaluluwa ni ______________.
+        <b className="response">Tugon:</b> Kaawaan mo&#39;t patawarin ang
+        kaluluwa ni ______________.
       </p>
       <p>
-        <b>Namumuno:</b>
+        <b className="leader">Namumuno:</b>
       </p>
       <p>
         (1) Hesus ko, alangang-alang sa masaganang dugo na iyong ipinawis ng
@@ -85,17 +86,18 @@ const Kantada = () => {
         matalim na sibat at ito ay binukalan ng dugo at tubig.
       </p>
       <p>
-        <b>Namumuno:</b> Pagkalooban mo siya Panginoon ng pagpapahingang walang
-        hanggan.
+        <b className="leader">Namumuno:</b> Pagkalooban mo siya Panginoon ng
+        pagpapahingang walang hanggan.
       </p>
       <p>
-        <b>Tugon:</b> Liwanagan mo siya nang di magmaliw mong ilaw.
+        <b className="response">Tugon:</b> Liwanagan mo siya nang di magmaliw
+        mong ilaw.
       </p>
       <p>
-        <b>Namumuno:</b> Mapanatag nawa siya sa Kapayapaan.
+        <b className="leader">Namumuno:</b> Mapanatag nawa siya sa Kapayapaan.
       </p>
       <p>
-        <b>Tugon:</b> Siya Nawa.
+        <b className="response">Tugon:</b> Siya Nawa.
       </p>
       <p className="text-center">
         <b>“AVE MARIA” </b>
@@ -131,10 +133,10 @@ const Kantada = () => {
         Ave, Ave, Ave Maria
       </p>
       <p>
-        <b>Namumuno:</b> Katamis-tamisang Hesus, sa pagsakop Mo sa sangkatauhan,
-        inibig mong magkatawang tao sa sinapupunan ng Mahal na Birhen. Unang
-        tumulo ang Iyong banal na dugo nang Ikaw ay binyagan sa templo ng
-        Herusalem.
+        <b className="leader">Namumuno:</b> Katamis-tamisang Hesus, sa pagsakop
+        Mo sa sangkatauhan, inibig mong magkatawang tao sa sinapupunan ng Mahal
+        na Birhen. Unang tumulo ang Iyong banal na dugo nang Ikaw ay binyagan sa
+        templo ng Herusalem.
       </p>
       <p>
         Nang sumapit ang takdang panahon ikaw ay nangaral, nagpakita ng
@@ -178,7 +180,8 @@ const Kantada = () => {
         <b>(AWIT)</b>
       </p>
       <p>
-        <b>Namumuno:</b> Maganda kang tunay O Mariang walang kadungis-dungis.
+        <b className="leader">Namumuno:</b> Maganda kang tunay O Mariang walang
+        kadungis-dungis.
       </p>
       <p>(Magkukrus ng 3 ulit)</p>
       <ul>
@@ -193,9 +196,9 @@ const Kantada = () => {
         </li>
       </ul>
       <p>
-        <b>Lahat:</b> Sumasampalataya ako sa Diyos Amang Makapangyarihan sa
-        lahat, na Maylikha ng langit at lupa. Sumasampalataya ako kay
-        Jesukristo, iisang Anak ng Diyos, Panginoon nating lahat.
+        <b className="response">Lahat:</b> Sumasampalataya ako sa Diyos Amang
+        Makapangyarihan sa lahat, na Maylikha ng langit at lupa. Sumasampalataya
+        ako kay Jesukristo, iisang Anak ng Diyos, Panginoon nating lahat.
         Nagkatawang-tao siya lalang ng Espiritu Santo, ipinanganak ni Santa
         Mariang Birhen. Pinagpakasakit ni Poncio Pilato, ipinako sa krus,
         namatay, inilibing. Nanaog sa kinaroroonan ng mga yumao; nang ikatlong
@@ -208,6 +211,331 @@ const Kantada = () => {
       </p>
       <p className="text-center">
         <b>(AWIT)</b>
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Panginoon, maawa Ka sa kanya
+        <br />
+        <b className="response">Tugon:</b> Panginoon, maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kristo, maawa Ka sa kanya
+        <br />
+        <b className="response">Tugon:</b> Kristo, maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Panginoon, maawa Ka sa kanya
+        <br />
+        <b className="response">Tugon:</b> Panginoon, maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kristo, pakinggan mo siya
+        <br />
+        <b className="response">Tugon:</b> Kristo, pakinggan mo siya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kristo, pakapakinggan mo siya
+        <br />
+        <b className="response">Tugon:</b> Kristo, pakapakinggan mo siya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Diyos Ama sa langit
+        <br />
+        <b className="response">Tugon:</b>Maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Diyos Anak na tumubos sa sanlibutan
+        <br />
+        <b className="response">Tugon:</b>Maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Diyos Espiritu Santo
+        <br />
+        <b className="response">Tugon:</b> Maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Santisima Trinidad tatlong persona
+        sa Iisang Diyos
+        <br />
+        <b className="response">Tugon:</b> Maawa Ka sa kanya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Santa Maria
+        <br />
+        <b className="response">Tugon:</b> *Ipanalangin mo siya
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b>
+        <br />
+        Santang Ina ng Diyos* <br />
+        Santang Birhen ng mga birhen* <br />
+        Ina ni Kristo* <br />
+        Ina ng grasya ng Diyos* <br />
+        Inang kasakdal-sakdalan* <br />
+        Inang walang malay sa kahalayan* <br />
+        Inang di malapitan ng masama* <br />
+        Inang walang bahid ng kasalanan* <br />
+        Inang kalinis-linisan* <br />
+        Inang kaibig-ibig* <br />
+        Inang kataka-taka* <br />
+        Ina ng mabuting kahatulan* <br />
+        Ina ng May Gawa ng Lahat* <br />
+        Ina na magpag-adya* <br />
+        Birheng kapaham-pahaman* <br />
+        Birheng dapat igalang* <br />
+        Birheng dapat ipagbantog* <br />
+        Birheng makapangyayari* <br />
+        Birheng maawain* <br />
+        Birheng matibay ang loob sa magaling* <br />
+        Salamin ng katuwiran* <br />
+        Luklukan ng karunungan* <br />
+        Simula ng tuwa namin* <br />
+        Sisidlan ng kabanalan* <br />
+        Sisidlan ng bunyi at bantog* <br />
+        Sisdlang bukod na kusang loob na masunurin sa Panginoong Diyos* <br />
+        Rosang bulaklak na di mapuspos ng bait ng tao ang halaga* <br />
+        Tore ni David* <br />
+        Toreng garing* <br />
+        Bahay na ginto* <br />
+        Kaban ng tipan* <br />
+        Pinto ng langit* <br />
+        Talang maliwanag* <br />
+        Mapagpagaling sa mga maysakit* <br />
+        Sakdalan ng mga makasalanan* <br />
+        Mapang-aliw sa mga nagdadalamhati* <br />
+        Mapag-ampon sa mga Kristiyano* <br />
+        Reyna ng mga anghel* <br />
+        Reyna ng mga propeta* <br />
+        Reyna ng mga apostol* <br />
+        Reyna ng mga martir* <br />
+        Reyna ng mga kompesor* <br />
+        Reyna ng mga birhen* <br />
+        Reyna ng lahat ng mga santo* <br />
+        Reynang ipininaglihi ng walang salang orihinal* <br />
+        Reynang iniakyat sa langit* <br />
+        Reyna ng kasantu-santusang rosaryo* <br />
+        Reyna ng kapayapaan* <br />
+        Reyna ng mga pamilya* <br />
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kordero ng Diyos na nakawawala ng
+        mga kasalanan ng sanlibutan. <br />
+        <b className="response">Tugon:</b> Patawarin mo po siya Panginoon.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kordero ng Diyos na nakawawala ng
+        mga kasalanan ng sandaigdigan. <br />
+        <b className="response">Tugon:</b> Pakapakinggan mo po siya Panginoon.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kordero ng Diyos na nakawawala ng
+        mga kasalanan ng santinakpan. <br />
+        <b className="response">Tugon:</b> Kaawan mo po siya Panginoon.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Ipinanalangin namin siya Panginoon.{" "}
+        <br />
+        <b className="response">Tugon:</b> Nang siya ay maging dapat makinabang
+        sa mga pangako ni Hesukristong Panginoon.
+      </p>
+      <p className="text-center">
+        <b>(AWIT)</b>
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Hesus, Maria, Jose, Hesus na
+        kahanga-hanga, Mariang Ina ng Awa, Jose na mapagpala, kayo na po ang
+        mag-ampon at kumalinga sa alipin ninyong aba ng hindi mapasama sa
+        impyerno.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> <br />
+        Ama namin, sumasalangit Ka. <br />
+        Sambahin ang ngalan mo. <br />
+        Mapasaamin ang kaharian mo <br />
+        Sundin ang loob mo dito sa lupa para nang sa langit.
+      </p>
+      <p>
+        <b className="response">Lahat:</b> <br />
+        Bigyan mo po kami ngayon ng aming kakainin sa araw-araw <br />
+        At patawarin Mo po kami sa aming mga sala <br />
+        Para nang pagpapatawad namin sa mga nagkakasala sa amin. <br />
+        At huwag mo po kaming ipahintulot sa tukso <br />
+        At iadya mo kami sa lahat ng masama <br />
+        Amen
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> <br />
+        Aba Ginoong Maria, napupuno ka ng grasya, <br />
+        Ang Panginoong Diyos ay sumasaiyo. <br />
+        Bukod kang pinagpala sa babaeng lahat <br />
+        At pinagpala naman ang &#39;yong anak na si Hesus.
+      </p>
+      <p>
+        <b className="response">Lahat:</b> <br />
+        Santa Maria, Ina ng Diyos <br />
+        Ipanalangin mo kaming makasalanan <br />
+        Ngayon at kung kami&#39;y mamamatay. <br />
+        Amen
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Pagkalooban mo po siya Panginoon ng
+        pagpapahingang walang hanggan. <br />
+        <b className="response">Tugon:</b> At liwanagan mo po siya Panginoon ng
+        di magmaliw mong ilaw.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Mapanatag nawa siya sa kapayapaan.{" "}
+        <br />
+        <b className="response">Tugon:</b> Siya Nawa.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Inihahabilin namin sa Iyo, o
+        Panginoon ang kaluluwa ni ____________ na sa pagpanaw niya dito sa lupa,
+        iyo pong ipatawad ang kanyang buhay at alang-alang sa Iyong habag,
+        loobin Mong manatili siya sa Iyong banal na kaharian. Siya Nawa.
+      </p>
+      <p>
+        O Panginoon naming Hesus, alang-alang sa Iyong kahirapan, kaawaan Mo ang
+        kaluluwa ni ________________ at ang mga kaluluwa sa Purgatoryo.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> <br />
+        Ama namin, sumasalangit Ka. Sambahin ang ngalan mo. Mapasaamin ang
+        kaharian mo. Sundin ang loob mo dito sa lupa para nang sa langit.
+      </p>
+      <p>
+        <b className="response">Lahat:</b> Bigyan mo po kami ngayon ng aming
+        kakainin sa araw-araw. At patawarin Mo po kami sa aming mga sala Para
+        nang pagpapatawad namin sa mga nagkakasala sa amin. At huwag mo po
+        kaming ipahintulot sa tukso. At iadya mo kami sa lahat ng masama. Amen
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Aba Ginoong Maria…
+      </p>
+      <p>
+        <b className="response">Lahat:</b> Santa Maria, Ina ng Diyos…
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Para sa Maybahay at sa Lahat ng
+        Narito
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> <br />
+        Ama namin, sumasalangit Ka. Sambahin ang ngalan mo. <br />
+        Mapasaamin ang kaharian mo. Sundin ang loob mo dito sa lupa para nang sa
+        langit.
+      </p>
+      <p>
+        <b className="response">Lahat:</b> Bigyan mo po kami ngayon ng aming
+        kakainin sa araw-araw. At patawarin Mo po kami sa aming mga sala Para
+        nang pagpapatawad namin sa mga nagkakasala sa amin. At huwag mo po
+        kaming ipahintulot sa tukso. At iadya mo kami sa lahat ng masama. Amen
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Aba Ginoong Maria…
+      </p>
+      <p>
+        <b className="response">Lahat:</b> Santa Maria, Ina ng Diyos…
+      </p>
+      <p className="text-center">
+        <b>(AWIT)</b>
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Mahal na Birhen ito pong aming hain,
+        di man dapat ay tanggapin, ang kaluluwa namin, kaawaan at ampunin, sa
+        kamatayang darating, sa wakas ng buhay namin, sa langit mo po pagpalain.
+        Siya Nawa.
+      </p>
+      <p>
+        Pagpalain mo po kami&#39;t ampunin Diyos na Panginoon namin, igawad mo
+        po sa amin ang Iyong tulong, pagpalain ang aming bahay at kaming lahat
+        na namamahay. Iligtas mo kami sa lakas ng lindol, sa karahasan ng
+        lintik, sa sunog, sa tubig, sa hangin at sa lahat ng makakasama sa amin,
+        alang-alang na po sa katamis-tamisan ngalan ng anak mong si Hesus. Siya
+        Nawa.
+      </p>
+      <p>
+        Salamat po sa Iyo Panginon naming Diyos, kami&#39;y sinapit mo sa mahal
+        na hapon, sapiting muli sa mahal mong umaga, bigyan ng buhay, lakas,
+        kababaang-loob, pagtitiis, matutong umibig at maglingkod sa Iyo,
+        Panginoon naming Diyos. Siya Nawa.
+      </p>
+      <p>
+        <b className="response">Lahat:</b> Aba Po Santa Mariang Reyna, Ina ng
+        awa, ikaw ang kabuhayan at katamisan; aba pinananaligan ka namin. Ikaw
+        ang tinatawag namin, pinapanaw na anak ni Eva. Ikaw rin ang
+        pinagbubuntuhang-hininga namin sa aming pagtangis dini sa lupang bayang
+        kahapis-hapis. Ay aba pintakasi ka namin, ilingon mo sa amin ang mga
+        mata mong maawain, at saka kung matapos yaring pagpanaw sa amin, ipakita
+        mo sa amin ang iyong anak na si Jesus. Santa Maria Ina ng Diyos maawain
+        at maalam at matamis na Birhen.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Ipanalangin mo kami Santang Ina ng
+        Diyos. <br />
+        <b className="response">Tugon:</b> Nang kami ay maging dapat makinabang
+        sa mga Pangako ni Kristong Panginoon. Siya Nawa.
+      </p>
+      <p className="text-center">
+        <b>(AWIT) </b>
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Ang Pagpapala ng Ama at ng Anak at
+        ng Espiritu Santo, at ng Mahal na Birheng Maria, igawad mo sa amin at
+        amin nawang tamuhin.
+        <br />
+        <b className="response">Tugon:</b> Siya Nawa.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kamahal-mahalang puso ni Hesus.{" "}
+        <br />
+        <b className="response">Tugon:</b> Maawa ka sa amin.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kalinis-linisang puso ni Maria.{" "}
+        <br />
+        <b className="response">Tugon:</b> Ipanalangin mo kami.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> San Juan <br />
+        <b className="response">Tugon:</b> Ipanalangin mo kami.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> San Jose <br />
+        <b className="response">Tugon:</b> Ipanalangin mo kami.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> San Lorenzo Ruiz at mga kasama{" "}
+        <br />
+        <b className="response">Tugon:</b> Ipanalangin ninyo kami.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Mga anghel at arkanghel ng Diyos.{" "}
+        <br />
+        <b className="response">Tugon:</b> Tulungan ninyo kami.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Hesus Hari ng Awa! <br />
+        <b className="response">Tugon:</b> Kami ay nananalig sa iyo.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> O krus ni Kristong kabanal-banalan.{" "}
+        <br />
+        <b className="response">Tugon:</b> Iligtas mo kami sa lahat ng kasamaan.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> Kalinis-linisang puso ni Maria.{" "}
+        <br />
+        <b className="response">Tugon:</b> Ipanalangin mo kami ngayon at sa oras
+        ng aming kamatayan.
+      </p>
+      <p>
+        <b className="leader">Namumuno:</b> San Pedro Calungsod. <br />
+        <b className="response">Tugon:</b> Ipanalangin mo kami.
+      </p>
+      <p className="text-center">
+        <i>
+          <b>Sa ngalan ng Ama, ng Anak at ng Espiritu Santo. Amen </b>
+        </i>
       </p>
     </div>
   );

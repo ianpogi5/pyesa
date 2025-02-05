@@ -11,3 +11,11 @@
 .kantada p.text-center {
   text-align: center;
 }
+
+.kantada b.leader {
+  color: #f38ba8;
+}
+
+.kantada b.response {
+  color: #89b4fa;
+}
