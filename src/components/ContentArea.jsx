@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ChordSheetJS from "chordsheetjs";
 import YouTubeEmbed from "./YouTubeEmbed";
+import useOnlineStatus from "../hooks/useOnlineStatus";
 import "./ContentArea.css";
 
 const ContentArea = ({
@@ -13,6 +14,7 @@ const ContentArea = ({
 }) => {
   const [fontSize, setFontSize] = useState(16); // Default font size in pixels
   const [lyricsOnly, setlyricsOnly] = useState(true);
+  const isOnline = useOnlineStatus();
 
   // Increase font size (limit to 32px)
   const increaseFontSize = () => {
@@ -98,7 +100,9 @@ const ContentArea = ({
         <pre style={{ fontSize: `${fontSize}px` }}>
           {lyricsOnly ? lyrics : song && formatter.format(song)}
         </pre>
-        {selectedSong?.Url && <YouTubeEmbed url={selectedSong.Url} />}
+        {isOnline && selectedSong?.Url && (
+          <YouTubeEmbed url={selectedSong.Url} />
+        )}
       </div>
       <div className="navigation">
         <button onClick={onPrevious} disabled={currentIndex === 0}>
