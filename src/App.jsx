@@ -142,6 +142,13 @@ const App = () => {
     navigate("/"); // Reset the URL to the base
   };
 
+  // Handle Home
+  const handleHome = () => {
+    navigate(`/`);
+    setIsSidebarOpen(true); // Hide sidebar on small screens
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Handle kantada
   const handleKantada = () => {
     navigate(`/kantada`);
@@ -153,7 +160,7 @@ const App = () => {
     <div className="app">
       <div className="app-header">
         <h1 className="app-title">
-          PG Choir - Pyesa
+          <span onClick={handleHome}>PG Choir - Pyesa</span>
           <InstallPWA />
         </h1>
 

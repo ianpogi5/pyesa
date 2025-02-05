@@ -43,6 +43,7 @@ p, pre {
   font-weight: bold;
   color: #cdd6f4;
   margin: 0;
+  cursor: pointer;
 }
 /* Sidebar Toggle Button */
 .sidebar-toggle {
