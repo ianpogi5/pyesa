@@ -1,4 +1,4 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({
@@ -8,7 +8,10 @@ const Sidebar = ({
   onItemClick,
   currentSongIndex,
   onBack,
+  handleKantada,
 }) => {
+  const navigate = useNavigate();
+
   let header = "";
   if (selectedFile) {
     const [dateStr, sunday] = selectedFile.split(" - ");
@@ -38,6 +41,15 @@ const Sidebar = ({
         )}
       </div>
       <ul>
+        {!isSongList && (
+          <li
+            key="kantada"
+            onClick={handleKantada}
+            className="sidebar-item-card"
+          >
+            <span>Rosario Cantada</span>
+          </li>
+        )}
         {items.map((item, index) => (
           <li
             key={index}

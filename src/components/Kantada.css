@@ -1,0 +1,13 @@
+.kantada {
+  padding: 20px;
+  margin: 0px;
+}
+
+.kantada p {
+  padding-bottom: 20px;
+  text-align: justify;
+}
+
+.kantada p.text-center {
+  text-align: center;
+}

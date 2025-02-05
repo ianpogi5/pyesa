@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { FiMenu } from "react-icons/fi";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import ContentArea from "./components/ContentArea";
+import Kantada from "./components/Kantada";
 import InstallPWA from "./components/InstallPWA";
 import "./App.css";
 
@@ -125,6 +126,13 @@ const App = () => {
     navigate("/"); // Reset the URL to the base
   };
 
+  // Handle kantada
+  const handleKantada = () => {
+    navigate(`/kantada`);
+    if (isSmallScreen) setIsSidebarOpen(false); // Hide sidebar on small screens
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
     <div className="app">
       <div className="app-header">
@@ -148,16 +156,27 @@ const App = () => {
             onItemClick={selectedFile ? handleSongClick : handleFileClick}
             currentSongIndex={currentSongIndex}
             onBack={selectedFile ? goBackToFileList : null}
+            handleKantada={handleKantada}
           />
         )}
-        <ContentArea
-          selectedFile={selectedFile}
-          selectedSong={fileContent ? fileContent[currentSongIndex] : null}
-          currentIndex={currentSongIndex}
-          totalSongs={fileContent ? fileContent.length : 0}
-          onPrevious={goToPreviousSong}
-          onNext={goToNextSong}
-        />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ContentArea
+                selectedFile={selectedFile}
+                selectedSong={
+                  fileContent ? fileContent[currentSongIndex] : null
+                }
+                currentIndex={currentSongIndex}
+                totalSongs={fileContent ? fileContent.length : 0}
+                onPrevious={goToPreviousSong}
+                onNext={goToNextSong}
+              />
+            }
+          />
+          <Route path="kantada" element={<Kantada />} />
+        </Routes>
       </div>
     </div>
   );
