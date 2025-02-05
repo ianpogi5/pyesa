@@ -3,6 +3,10 @@
   margin: 0px;
 }
 
+.kantada h3 {
+  font-size: 22px;
+}
+
 .kantada p {
   padding-bottom: 20px;
   text-align: justify;
@@ -18,4 +22,8 @@
 
 .kantada b.response {
   color: #89b4fa;
+}
+
+.kantada .content-controls {
+  margin-bottom: 20px;
 }
