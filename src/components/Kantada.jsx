@@ -146,7 +146,7 @@ const Kantada = () => {
           Ave, Ave, Ave Maria
         </p>
         <p className="text-center">
-          Maria Sinta ka ng puso, mahal kong Ina <br />
+          Sinta ka ng puso, mahal kong Ina <br />
           Yaman ka&#39;t pag-asa, ni&#39;ring kaluluwa. <br />
           Ave, Ave, Ave Maria <br />
           Ave, Ave, Ave Maria
