@@ -3,6 +3,7 @@ import "./Kantada.css";
 
 const Kantada = () => {
   const [fontSize, setFontSize] = useState(16);
+  const [alignJustify, setAlignJustify] = useState(true);
 
   // Increase font size (limit to 32px)
   const increaseFontSize = () => {
@@ -12,6 +13,10 @@ const Kantada = () => {
   // Decrease font size (limit to 12px)
   const decreaseFontSize = () => {
     setFontSize((prevFontSize) => Math.max(prevFontSize - 2, 12));
+  };
+
+  const toggleAlignJustify = () => {
+    setAlignJustify((prevAlignJustify) => !prevAlignJustify);
   };
 
   return (
@@ -26,8 +31,19 @@ const Kantada = () => {
         <button onClick={increaseFontSize} disabled={fontSize >= 32}>
           A+
         </button>
+        <button
+          onClick={toggleAlignJustify}
+          className={alignJustify ? "toggleJustify" : "toggleLyricJustify"}
+        >
+          {alignJustify ? "Justify" : "Left"}
+        </button>
       </div>
-      <div style={{ fontSize: `${fontSize}px` }}>
+      <div
+        style={{
+          fontSize: `${fontSize}px`,
+          textAlign: alignJustify ? "justify" : "left",
+        }}
+      >
         <p>
           <b className="leader">NAMUMUNO:</b> Sa Ngalan ng Ama, at ng Anak, at
           ng Espiritu Santo. Amen.

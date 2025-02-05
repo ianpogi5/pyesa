@@ -1,6 +1,7 @@
 .kantada {
   padding: 20px;
   margin: 0px;
+  text-align: justify;
 }
 
 .kantada h3 {
@@ -9,11 +10,10 @@
 
 .kantada p {
   padding-bottom: 20px;
-  text-align: justify;
 }
 
 .kantada p.text-center {
-  text-align: center;
+  text-align: center !important;
 }
 
 .kantada b.leader {
