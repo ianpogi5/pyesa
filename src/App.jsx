@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FiMenu } from "react-icons/fi";
 import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
@@ -7,6 +7,7 @@ import InstallPWA from "./components/InstallPWA";
 import "./App.css";
 
 const App = () => {
+  const [initialLoad, setInitialLoad] = useState(true);
   const [files, setFiles] = useState([]);
   const [fileContent, setFileContent] = useState(null); // List of songs in the selected file
   const [selectedFile, setSelectedFile] = useState(null); // File name
@@ -20,6 +21,21 @@ const App = () => {
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+  const loadFile = useCallback(
+    async (filename) => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/files/${filename}`);
+        const data = await response.json();
+        setFileContent(data.songs);
+        setSelectedFile(filename);
+        setCurrentSongIndex(null); // Reset song selection
+      } catch (error) {
+        console.error("Error fetching file content:", error);
+      }
+    },
+    [API_BASE_URL]
+  );
+
   // Load the list of files on initial render
   useEffect(() => {
     const fetchFiles = async () => {
@@ -27,13 +43,23 @@ const App = () => {
         const response = await fetch(`${API_BASE_URL}/files`);
         const data = await response.json();
         setFiles(data.files);
+
+        const params = new URLSearchParams(location.search);
+        const filename = params.get("set");
+        if (!filename && data.files.length > 0 && initialLoad) {
+          navigate(`/?set=${data.files[0]}`);
+        }
+
+        if (initialLoad) {
+          setInitialLoad(false);
+        }
       } catch (error) {
         console.error("Error fetching file list:", error);
       }
     };
 
     fetchFiles();
-  }, [API_BASE_URL]);
+  }, [API_BASE_URL, navigate, location.search, initialLoad]);
 
   // Handle screen resizing
   useEffect(() => {
@@ -53,19 +79,7 @@ const App = () => {
     if (filename) {
       loadFile(filename);
     }
-  }, [location.search]);
-
-  const loadFile = async (filename) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/files/${filename}`);
-      const data = await response.json();
-      setFileContent(data.songs);
-      setSelectedFile(filename);
-      setCurrentSongIndex(null); // Reset song selection
-    } catch (error) {
-      console.error("Error fetching file content:", error);
-    }
-  };
+  }, [loadFile, location.search]);
 
   // Handle file click: Fetch file content (songs)
   const handleFileClick = async (index) => {
