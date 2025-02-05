@@ -47,8 +47,17 @@ const App = () => {
 
         const params = new URLSearchParams(location.search);
         const filename = params.get("set");
-        if (!filename && data.files.length > 0 && initialLoad) {
+        if (
+          !filename &&
+          data.files.length > 0 &&
+          initialLoad &&
+          location.pathname === "/"
+        ) {
           navigate(`/?set=${data.files[0]}`);
+        }
+
+        if (isSmallScreen && location.pathname === "/kantada") {
+          setIsSidebarOpen(false);
         }
 
         if (initialLoad) {
@@ -60,7 +69,14 @@ const App = () => {
     };
 
     fetchFiles();
-  }, [API_BASE_URL, navigate, location.search, initialLoad]);
+  }, [
+    API_BASE_URL,
+    navigate,
+    location.search,
+    initialLoad,
+    location,
+    isSmallScreen,
+  ]);
 
   // Handle screen resizing
   useEffect(() => {
