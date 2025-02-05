@@ -24,12 +24,12 @@ const Kantada = () => {
         sa krus ng dahil sa akin. Siya Nawa.
       </p>
       <p>
-        Tanggapin Mo ang aming pagsisisi bilang handog upang kami'y matutong
+        Tanggapin Mo ang aming pagsisisi bilang handog upang kami&#39;y matutong
         sumunod sa Iyo nang buong puso. Walang nagtiwala sa Iyo na nabigo,
         simula ngayon, buong puso kaming susunod sa Iyo sasamba at magpupuri sa
         Iyo. Huwag mo kaming biguin yamang Ikaw ay maamo at mapagkalinga.
         Kahabagan mo kami at saklolohan. Muli mong iparanas sa amin ang Iyong
-        kahanga-hangang pagliligtas at sa gayo'y muling dakilain ang iyong
+        kahanga-hangang pagliligtas at sa gayo&#39;y muling dakilain ang iyong
         pangalan, Panginoon.
       </p>
       <p>
@@ -39,10 +39,10 @@ const Kantada = () => {
         namatay sa krus. Siya Nawa.
       </p>
       <p className="text-center">
-        <b>(AWITIN ANG ‘AMA NAMIN’)</b>
+        <b>(AWITIN ANG &#39;AMA NAMIN&#39;)</b>
       </p>
       <p>
-        <b>Tugon:</b> Kaawaan mo't patawarin ang kaluluwa ni ______________.
+        <b>Tugon:</b> Kaawaan mo&#39;t patawarin ang kaluluwa ni ______________.
       </p>
       <p>
         <b>Namumuno:</b>
@@ -102,13 +102,13 @@ const Kantada = () => {
       </p>
       <p className="text-center">
         Sa Reyna ng langit, Ina ni Hesus. <br />
-        Tayo na’t mag-alay, magpuri ng lubos. <br />
+        Tayo na&#39;t mag-alay, magpuri ng lubos. <br />
         Ave, Ave, Ave Maria <br />
         Ave, Ave, Ave Maria
       </p>
       <p className="text-center">
         Maria Sinta ka ng puso, mahal kong Ina <br />
-        Yaman ka’t pag-asa, ni’ring kaluluwa. <br />
+        Yaman ka&#39;t pag-asa, ni&#39;ring kaluluwa. <br />
         Ave, Ave, Ave Maria <br />
         Ave, Ave, Ave Maria
       </p>
@@ -120,13 +120,13 @@ const Kantada = () => {
       </p>
       <p className="text-center">
         Pinto ka ng langit, bahay nag into. <br />
-        Kami’y may pag-asang pumiling sa iyo. <br />
+        Kami&#39;y may pag-asang pumiling sa iyo. <br />
         Ave, Ave, Ave Maria <br />
         Ave, Ave, Ave Maria
       </p>
       <p className="text-center">
         Birheng maligaya, luklukan ng mahal. <br />
-        Kami’y patnubayan sa kalangitan. <br />
+        Kami&#39;y patnubayan sa kalangitan. <br />
         Ave, Ave, Ave Maria <br />
         Ave, Ave, Ave Maria
       </p>
@@ -200,7 +200,7 @@ const Kantada = () => {
         Mariang Birhen. Pinagpakasakit ni Poncio Pilato, ipinako sa krus,
         namatay, inilibing. Nanaog sa kinaroroonan ng mga yumao; nang ikatlong
         araw nabuhay na mag-uli. Umakyat sa langit, naluluklok sa kanan ng Diyos
-        Amang Makapangyarihan sa lahat; at doon magmumulang paririto't
+        Amang Makapangyarihan sa lahat; at doon magmumulang paririto&#39;t
         maghuhukom sa nangabubuhay at nangamatay na tao. Sumasampalataya ako sa
         Espiritu Santo, sa Banal na Simbahang Katolika, sa kasamahan ng mga
         Banal; sa kapatawaran ng mga kasa-lanan, sa pagkabuhay na mag-uli ng
