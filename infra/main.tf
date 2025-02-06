@@ -234,6 +234,10 @@ resource "aws_cloudfront_distribution" "pyesa" {
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
+    min_ttl                = 0
+    default_ttl            = 86400
+    max_ttl                = 86400
+    compress               = true
 
     forwarded_values {
       query_string = true
