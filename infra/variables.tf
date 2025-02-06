@@ -28,3 +28,8 @@ variable "S3_BUCKET" {
   type        = string
   description = ""
 }
+
+variable "API_DOMAIN" {
+  type        = string
+  description = ""
+}

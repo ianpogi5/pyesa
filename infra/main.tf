@@ -227,10 +227,39 @@ resource "aws_cloudfront_distribution" "pyesa" {
     # response_headers_policy_id = "19955003-7f85-47c7-ad66-e98bfa653b6f"
   }
 
+  # API Gateway Routing
+  ordered_cache_behavior {
+    path_pattern           = "/api/*"
+    target_origin_id       = "APIGatewayOrigin"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization"]
+      cookies {
+        forward = "all"
+      }
+    }
+  }
+
   origin {
     domain_name = aws_s3_bucket.pyesa.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.pyesa.bucket
     origin_access_control_id = aws_cloudfront_origin_access_control.pyesa.id
+  }
+
+  origin {
+    domain_name = "${var.API_DOMAIN}" # Replace with your API Gateway's base domain
+    origin_id   = "APIGatewayOrigin"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
   }
 
   restrictions {

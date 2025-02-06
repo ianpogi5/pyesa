@@ -60,6 +60,7 @@ jobs:
           TF_VAR_DOMAIN: ${{ vars.DOMAIN }}
           TF_VAR_S3_BUCKET: ${{ vars.S3_BUCKET }}
           TF_VAR_REGION: ${{ vars.AWS_REGION }}
+          TF_VAR_API_DOMAIN: ${{ vars.API_DOMAIN }}
 
       - name: Create version file
         run: |
