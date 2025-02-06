@@ -248,6 +248,27 @@ resource "aws_cloudfront_distribution" "pyesa" {
     }
   }
 
+  # API Gateway Routing
+  ordered_cache_behavior {
+    path_pattern           = "/api/files/*.json"
+    target_origin_id       = "APIGatewayOrigin"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
+    min_ttl                = 31536000
+    default_ttl            = 31536000
+    max_ttl                = 31536000
+    compress               = true
+
+    forwarded_values {
+      query_string = true
+      headers      = ["Authorization"]
+      cookies {
+        forward = "all"
+      }
+    }
+  }
+
   origin {
     domain_name = aws_s3_bucket.pyesa.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.pyesa.bucket
