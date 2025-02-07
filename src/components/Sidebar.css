@@ -78,3 +78,21 @@
   margin-bottom: 0px;
   padding-bottom: 0px;
 }
+
+.blinking-loader {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
+.loader-icon {
+  margin-right: 8px;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.2;
+  }
+}

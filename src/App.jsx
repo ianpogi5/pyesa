@@ -15,6 +15,7 @@ const App = () => {
   const [currentSongIndex, setCurrentSongIndex] = useState(null); // Index of the currently selected song
   const [isSmallScreen, setIsSmallScreen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   // Navigation and URL handling
   const location = useLocation();
@@ -30,6 +31,7 @@ const App = () => {
         setFileContent(data.songs);
         setSelectedFile(filename);
         setCurrentSongIndex(null); // Reset song selection
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching file content:", error);
       }
@@ -44,6 +46,7 @@ const App = () => {
         const response = await fetch(`${API_BASE_URL}/files`);
         const data = await response.json();
         setFiles(data.files);
+        setLoading(false);
 
         const params = new URLSearchParams(location.search);
         const filename = params.get("set");
@@ -94,6 +97,7 @@ const App = () => {
     const params = new URLSearchParams(location.search);
     const filename = params.get("set"); // Extract `set` param (e.g., "filename.json")
     if (filename) {
+      setLoading(true);
       loadFile(filename);
     }
   }, [loadFile, location.search]);
@@ -104,6 +108,7 @@ const App = () => {
     // Update URL with the selected file name
     navigate(`/?set=${filename}`);
     // Load the file content
+    setLoading(true);
     loadFile(filename);
   };
 
@@ -173,6 +178,7 @@ const App = () => {
       <div className={`layout ${isSidebarOpen ? "" : "sidebar-hidden"}`}>
         {isSidebarOpen && (
           <Sidebar
+            loading={loading}
             selectedFile={selectedFile}
             items={selectedFile ? fileContent : files}
             isSongList={!!selectedFile}

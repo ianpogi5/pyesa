@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import "./Sidebar.css";
 
 const Sidebar = ({
+  loading,
   selectedFile,
   items,
   isSongList,
@@ -31,6 +32,12 @@ const Sidebar = ({
   }
   return (
     <div className="sidebar">
+      {loading && (
+        <div className="blinking-loader">
+          <span className="loader-icon">🎵</span>
+          <span>Loading...</span>
+        </div>
+      )}
       {selectedFile && header}
       <div className="sidebar-header">
         <h3>{isSongList ? "Songs" : "Files"}</h3>
