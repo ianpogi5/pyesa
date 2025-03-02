@@ -3,16 +3,6 @@ variable "REGION" {
   description = "AWS Region"
 }
 
-variable "AWS_ACCOUNT_ID" {
-  type        = string
-  description = "AWS Account ID"
-}
-
-variable "AWS_USER" {
-  type        = string
-  description = "AWS User"
-}
-
 variable "SSL_CERT_ARN" {
   type        = string
   description = "SSL certificate ARN"

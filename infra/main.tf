@@ -48,60 +48,6 @@ data "aws_iam_policy_document" "read_pyesa_bucket" {
 }
 
 ###################################
-# KMS IAM Policy Document
-###################################
-data "aws_iam_policy_document" "kms_key" {
-  statement {
-    actions   = [
-        "kms:Decrypt",
-        "kms:Encrypt",
-        "kms:GenerateDataKey*"
-    ]
-    resources = ["*"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["cloudfront.amazonaws.com"]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.pyesa.arn]
-    }
-  }
-
-  statement {
-    actions   = [
-        "kms:*"
-    ]
-    resources = ["*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [
-        "arn:aws:iam::${var.AWS_ACCOUNT_ID}:user/${var.AWS_USER}",
-      ]
-    }
-  }
-
-}
-
-###################################
-# KMS Key
-###################################
-resource "aws_kms_key" "pyesa" {
-  enable_key_rotation = true
-}
-
-###################################
-# KMS Key Policy
-###################################
-resource "aws_kms_key_policy" "kms_key" {
-  key_id      = aws_kms_key.pyesa.key_id
-  policy      = data.aws_iam_policy_document.kms_key.json
-}
-
-###################################
 # S3
 ###################################
 resource "aws_s3_bucket" "pyesa" {
@@ -110,20 +56,6 @@ resource "aws_s3_bucket" "pyesa" {
   tags = {
     Environment = "Production"
     Terraform   = true
-  }
-}
-
-###################################
-# S3 Encryption
-###################################
-resource "aws_s3_bucket_server_side_encryption_configuration" "pyesa_encrypt" {
-  bucket = aws_s3_bucket.pyesa.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      kms_master_key_id = aws_kms_key.pyesa.arn
-      sse_algorithm     = "aws:kms"
-    }
   }
 }
 
@@ -229,14 +161,14 @@ resource "aws_cloudfront_distribution" "pyesa" {
 
   # API Gateway Routing
   ordered_cache_behavior {
-    path_pattern           = "/api/*"
+    path_pattern           = "/api/files"
     target_origin_id       = "APIGatewayOrigin"
     viewer_protocol_policy = "redirect-to-https"
     allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     min_ttl                = 0
-    default_ttl            = 86400
-    max_ttl                = 86400
+    default_ttl            = 0
+    max_ttl                = 0
     compress               = true
 
     forwarded_values {
