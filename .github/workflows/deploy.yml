@@ -10,6 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.SONGS_REPO_TOKEN }}
 
       - name: Configure AWS credentials from Production Account
         uses: aws-actions/configure-aws-credentials@v4
