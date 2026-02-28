@@ -1,9 +1,12 @@
 name: Deploy to Production
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version tag (e.g. v2.0.0). Left empty on manual runs."
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -70,7 +73,7 @@ jobs:
 
       - name: Create version file
         run: |
-          VERSION="${{ github.event.release.tag_name || github.sha }}"
+          VERSION="${{ inputs.version || github.sha }}"
           echo "$VERSION" > ./dist/build_version.txt
 
       - name: Upload to S3
