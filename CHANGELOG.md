@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.99.1] - 2026-02-28
+
+## What's Changed
+
+### Features
+- enhance deployment and release workflows to support manual version input
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v1.99.0...v1.99.1
+
+
 ## [1.99.0] - 2026-02-28
 
 ## What's Changed
