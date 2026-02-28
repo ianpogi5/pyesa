@@ -1,28 +1,28 @@
-import "./YouTubeEmbed.css";
+import useOnlineStatus from "../hooks/useOnlineStatus";
 
-const YouTubeEmbed = ({ url }) => {
-  const getYouTubeID = (url) => {
-    const regExp =
-      /(?:youtube\.com\/(?:[^\/]+\/[^\/]+|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-    const match = url.match(regExp);
-    return match ? match[1] : null;
-  };
+function extractVideoId(url) {
+  if (!url) return null;
+  const match = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+  );
+  return match ? match[1] : null;
+}
 
-  const videoId = getYouTubeID(url);
+export default function YouTubeEmbed({ url }) {
+  const isOnline = useOnlineStatus();
+  const videoId = extractVideoId(url);
 
-  if (!videoId) {
-    return <p>Invalid YouTube URL</p>;
-  }
+  if (!isOnline || !videoId) return null;
 
   return (
-    <div className="video-wrapper">
+    <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-surface mt-3">
       <iframe
+        className="absolute inset-0 w-full h-full"
         src={`https://www.youtube.com/embed/${videoId}`}
-        title="YouTube Video"
+        title="YouTube video"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
-      ></iframe>
+      />
     </div>
   );
-};
-
-export default YouTubeEmbed;
+}

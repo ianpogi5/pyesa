@@ -1,14 +1,119 @@
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --color-base: #ffffff;
+  --color-mantle: #f5f5f7;
+  --color-surface: #e8e8ec;
+  --color-surface-hover: #dcdce0;
+  --color-overlay: #9ca0b0;
+  --color-text: #1e1e2e;
+  --color-subtext: #5c5f77;
+  --color-blue: #1e66f5;
+  --color-teal: #179299;
+  --color-green: #40a02b;
+  --color-peach: #fe640b;
+  --color-red: #d20f39;
+  --color-pink: #ea76cb;
+  --color-sky: #04a5e5;
+  --color-lavender: #7287fd;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, monospace;
+}
+
+.dark {
+  --color-base: #1e1e2e;
+  --color-mantle: #181825;
+  --color-surface: #313244;
+  --color-surface-hover: #45475a;
+  --color-overlay: #9399b2;
+  --color-text: #cdd6f4;
+  --color-subtext: #a6adc8;
+  --color-blue: #89b4fa;
+  --color-teal: #94e2d5;
+  --color-green: #a6e3a1;
+  --color-peach: #fab387;
+  --color-red: #f38ba8;
+  --color-pink: #f5c2e7;
+  --color-sky: #89dceb;
+  --color-lavender: #b4befe;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-base);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+  height: 100dvh;
+}
+
+#root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-surface-hover);
+}
+
+/* ChordPro song rendering */
+.song-content {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.8;
+}
+.song-content .chord {
+  color: var(--color-blue);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9em;
+}
+.song-content .comment {
+  color: var(--color-peach);
+  font-weight: 700;
+  font-style: italic;
+  display: block;
+  margin-top: 0.75em;
+  margin-bottom: 0.25em;
+}
+.song-content .row {
+  margin-bottom: 0.15em;
+}
+.song-content .chord-lyrics-pair {
+  display: inline;
+}
+.song-content .chords-line {
+  color: var(--color-blue);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.9em;
+  line-height: 1.4;
+}
+.song-content .lyrics-line {
+  line-height: 1.6;
+}
+.song-content.lyrics-only .chords-line,
+.song-content.lyrics-only .chord {
+  display: none;
+}
+.song-content.lyrics-only .row {
+  margin-bottom: 0.1em;
 }
