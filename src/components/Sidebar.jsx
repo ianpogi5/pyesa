@@ -15,13 +15,21 @@ const Sidebar = ({
 
   let header = "";
   if (selectedFile) {
-    const [dateStr, sunday] = selectedFile.split(" - ");
+    let [dateStr, sunday] = selectedFile.split(" - ");
+    console.log(dateStr, sunday);
+
     const date = new Date(dateStr);
-    const formattedDate = new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(date);
+    console.log(date);
+    let formattedDate = "";
+    if (date instanceof Date && !isNaN(date)) {
+      formattedDate = new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+    } else {
+      sunday = dateStr;
+    }
 
     header = (
       <>
@@ -48,15 +56,6 @@ const Sidebar = ({
         )}
       </div>
       <ul>
-        {!isSongList && (
-          <li
-            key="kantada"
-            onClick={handleKantada}
-            className="sidebar-item-card"
-          >
-            <span>Rosario Cantada</span>
-          </li>
-        )}
         {items.map((item, index) => (
           <li
             key={index}

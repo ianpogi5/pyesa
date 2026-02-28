@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build --mode production",
-    "lint": "eslint .",
+    "lint": "eslint src/",
     "preview": "vite preview",
     "deploy": "git pull && npm install && npm run build && pm2 restart pyesa"
   },

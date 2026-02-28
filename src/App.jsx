@@ -30,8 +30,9 @@ const App = () => {
         const data = await response.json();
         setFileContent(data.songs);
         setSelectedFile(filename);
-        setCurrentSongIndex(null); // Reset song selection
+        // setCurrentSongIndex(0); // Reset song selection
         setLoading(false);
+        handleSongClick(0);
       } catch (error) {
         console.error("Error fetching file content:", error);
       }
@@ -105,8 +106,14 @@ const App = () => {
   // Handle file click: Fetch file content (songs)
   const handleFileClick = async (index) => {
     const filename = files[index];
+
     // Update URL with the selected file name
-    navigate(`/?set=${filename}`);
+    if (filename === "Rosario Cantada.json") {
+      navigate(`/kantada/?set=${filename}`);
+    } else {
+      navigate(`/?set=${filename}`);
+    }
+
     // Load the file content
     setLoading(true);
     loadFile(filename);
@@ -115,6 +122,7 @@ const App = () => {
   // Handle song selection by index
   const handleSongClick = (index) => {
     setCurrentSongIndex(index);
+    navigate(`/?set=${selectedFile}`);
     // Scroll to the top of the content area when a song is selected from the sidebar
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (isSmallScreen) setIsSidebarOpen(false); // Hide sidebar on small screens
