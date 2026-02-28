@@ -1,5 +1,83 @@
 # Changelog
 
+## [1.99.0] - 2026-02-28
+
+## What's Changed
+
+### Features
+- implement release workflow with version validation, changelog generation, and GitHub release creation
+- update deployment workflow, add S3 sync step, and refactor manifest generation
+- add SetsPage component for managing song sets and songs
+
+### Bug Fixes
+- enhance manifest generation with empty check and warning ci: update workflows to include submodules and token for checkout
+
+### Other Changes
+- refactor: simplify upload-song script by removing argument handling and streamlining S3 sync process
+- refactor: update song deduplication to use slug instead of Id
+- Add kantada
+- Remove kms key
+- Get Periodic updates
+- Add loading
+- Invalidate only generated files
+- Cache json files for 1 year
+- Add API caching
+- Update API URL in prod
+- Add API path
+- Add infra and deploy
+- Make home clickable
+- Don't show youtube when offline
+- Fix typo
+- Fix  kantada on first load
+- Change main font to Inter
+- Add justify controls
+- Add font-size control in kantada
+- Complete kantada text
+- Fix apostrophe
+- Initial cantada
+- Load first file on the list
+-  Add sidebar file header
+- Move back button to the right side of Songs
+- Highlite selected on sidebar
+- Change colors
+- Better lyrics only
+- Auto update app
+- Remove not needed file
+- Change them color
+- Change to dark mode
+- Initial lyrics only
+- Add set to query url
+- Embed youtube video
+- Add caching
+- Add install in deploy
+- Add offline support and fix layout issues
+- Scroll to top
+- Add font
+- Add font size change
+- Add deploy script
+- Fix song color
+- Fix bg color
+- Change song text bg color
+- Make song text darker
+- Add html title
+- Add production build
+- Add production env
+- Allow host
+- Fix header on desktop
+- Add title and menu
+- Add album label
+- Remove .json in filename
+- Fix song view
+- Remove log
+- Add prev and next button
+- Fix css
+- Fix css
+- Fix column
+- Initial codes
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/d50263e14fdc8def07eedbb8aaf9831ca4f8e64d...v1.99.0
+
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
