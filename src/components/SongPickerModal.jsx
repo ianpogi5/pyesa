@@ -157,9 +157,9 @@ export default function SongPickerModal({
                   </p>
                 </div>
               ) : (
-                displaySongs.map((song) => (
+                displaySongs.map((song, idx) => (
                   <SongCard
-                    key={song.Id}
+                    key={song.slug || `${song.Id}-${idx}`}
                     song={song}
                     showIndex={false}
                     isActive={false}

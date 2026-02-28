@@ -9,7 +9,7 @@ import EmptyState from "../components/EmptyState";
 import {
   getAllSongs,
   searchSongs,
-  getSongById,
+  getSongBySlug,
   saveSet,
   getAllSets,
 } from "../db/index";
@@ -84,10 +84,10 @@ export default function LibraryPage() {
     }, 1500);
   };
 
-  // Load specific song from URL param
+  // Load specific song from URL param (slug)
   useEffect(() => {
     if (songId) {
-      getSongById(Number(songId)).then((song) => {
+      getSongBySlug(decodeURIComponent(songId)).then((song) => {
         if (song) {
           setSelectedSong(song);
           setMobileView("viewer");
@@ -113,7 +113,7 @@ export default function LibraryPage() {
 
   const handleSongClick = (song) => {
     setSelectedSong(song);
-    navigate(`/library/${song.Id}`);
+    navigate(`/library/${encodeURIComponent(song.slug)}`);
     setMobileView("viewer");
   };
 
@@ -199,10 +199,10 @@ export default function LibraryPage() {
         ) : (
           filteredSongs.map((song) => (
             <SongCard
-              key={song.Id}
+              key={song.slug}
               song={song}
               showIndex={false}
-              isActive={selectedSong?.Id === song.Id}
+              isActive={selectedSong?.slug === song.slug}
               onClick={() => handleSongClick(song)}
             />
           ))

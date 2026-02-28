@@ -1,16 +1,33 @@
 import { openDB } from "idb";
 
 const DB_NAME = "pyesa-db";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise = null;
+
+/**
+ * Generate a stable slug from a song name for deduplication.
+ * The same song appearing in different sets will produce the same slug.
+ */
+export function toSlug(name) {
+  return (name || "untitled")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s/\\]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 function getDb() {
   if (!dbPromise) {
     dbPromise = openDB(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
+        // v1 → v2: switch songs keyPath from Id to slug for deduplication
+        if (oldVersion < 2 && db.objectStoreNames.contains("songs")) {
+          db.deleteObjectStore("songs");
+        }
         if (!db.objectStoreNames.contains("songs")) {
-          const songStore = db.createObjectStore("songs", { keyPath: "Id" });
+          const songStore = db.createObjectStore("songs", { keyPath: "slug" });
           songStore.createIndex("name", "name");
           songStore.createIndex("author", "author");
         }
@@ -24,23 +41,24 @@ function getDb() {
 }
 
 /**
- * Save an array of songs to IndexedDB. Deduplicates by song Id.
+ * Save an array of songs to IndexedDB. Deduplicates by song name (slug).
  */
 export async function saveSongs(songs) {
   const db = await getDb();
   const tx = db.transaction("songs", "readwrite");
   for (const song of songs) {
-    await tx.store.put(song);
+    const slug = toSlug(song.name);
+    await tx.store.put({ ...song, slug });
   }
   await tx.done;
 }
 
 /**
- * Get a single song by its Id.
+ * Get a single song by its slug.
  */
-export async function getSongById(id) {
+export async function getSongBySlug(slug) {
   const db = await getDb();
-  return db.get("songs", id);
+  return db.get("songs", slug);
 }
 
 /**
