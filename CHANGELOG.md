@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.99.2] - 2026-02-28
+
+## What's Changed
+
+### Features
+- consolidate release and deployment workflows into a single process
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v1.99.1...v1.99.2
+
+
 ## [1.99.1] - 2026-02-28
 
 ## What's Changed

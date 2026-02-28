@@ -1,7 +1,7 @@
 {
   "name": "pyesa",
   "private": true,
-  "version": "1.99.1",
+  "version": "1.99.2",
   "type": "module",
   "scripts": {
     "dev": "node scripts/generate-manifest.js && vite --host",
