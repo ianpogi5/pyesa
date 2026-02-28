@@ -30,13 +30,13 @@
 
 ```
 public/
-  files/               # ← git submodule (ianpogi5/pyesa-songs, private)
+  files/               # Song data (separate private git repo)
     mass/              #   Song set JSON files (YYYY-MM-DD - Name.json)
     sets.json          #   Auto-generated manifest of all sets
     rosario-set.json   #   Suggested songs for Rosario AWIT markers
 scripts/
   generate-manifest.js # Generates sets.json from mass/ directory
-  upload-song.sh       # Upload a new set: copy → manifest → S3 → git push
+  upload-song.sh       # Regenerate manifest → sync to S3 → git push
 src/
   components/          # Shared UI components (Header, SongViewer, etc.)
   contexts/            # ThemeContext (dark/light mode)
@@ -55,24 +55,13 @@ infra/                 # Terraform (S3, CloudFront, etc.)
 
 - Node.js 18+
 - npm 9+
-- AWS CLI (for uploading songs)
-
-### Clone (with submodule)
-
-```bash
-git clone --recurse-submodules git@github.com:ianpogi5/pyesa.git
-cd pyesa
-```
-
-If you've already cloned without `--recurse-submodules`:
-
-```bash
-git submodule update --init --recursive
-```
+- AWS CLI (for uploading songs and deploying)
 
 ### Install & Run
 
 ```bash
+git clone git@github.com:ianpogi5/pyesa.git
+cd pyesa
 npm install
 npm run dev
 ```
@@ -86,68 +75,93 @@ npm run build
 npm run preview   # preview the production build locally
 ```
 
-## Weekly Workflow: Adding a New Song Set
+## Uploading Song Files
 
-Each week, export the song set as a JSON file from your song app, then run:
+Song data lives in `public/files/` which is a separate private git repo ([ianpogi5/pyesa-songs](https://github.com/ianpogi5/pyesa-songs)). Song files are synced to S3 — the deployed app reads them from there.
 
-```bash
-./scripts/upload-song.sh 2025-12-25 "Christmas Day" ~/exported-set.json
-```
+### Adding a new song set
 
-This will:
+1. Export the song set as a JSON file from your song app
+2. Copy it to the mass directory with the naming convention:
 
-1. Copy the JSON to `public/files/mass/`
-2. Regenerate `sets.json` manifest
-3. Upload the new JSON + updated `sets.json` to S3 (`pyesa-web` bucket)
-4. Commit and push in the `pyesa-songs` submodule
+   ```bash
+   cp ~/exported-set.json "public/files/mass/2025-12-25 - Christmas Day.json"
+   ```
 
-The uploaded files are immediately live on the site (served via CloudFront from S3).
+3. Run the upload script:
+
+   ```bash
+   ./scripts/upload-song.sh
+   ```
+
+   This will:
+   - Regenerate `sets.json` from all files in `public/files/mass/`
+   - Sync everything to S3 (immediately live on the site via CloudFront)
+   - Commit and push changes in the songs repo
 
 ### Environment Variables
 
-| Variable          | Default     | Description    |
-| ----------------- | ----------- | -------------- |
-| `PYESA_S3_BUCKET` | `pyesa-web` | S3 bucket name |
-
-### Manual Alternative
-
-```bash
-# 1. Copy the file
-cp ~/set.json "public/files/mass/2025-12-25 - Christmas Day.json"
-
-# 2. Regenerate manifest
-npm run generate-manifest
-
-# 3. Upload to S3
-aws s3 cp "public/files/mass/2025-12-25 - Christmas Day.json" s3://pyesa-web/files/mass/
-aws s3 cp public/files/sets.json s3://pyesa-web/files/sets.json
-```
-
-## Songs Submodule
-
-Song data lives in a separate private repository: **[ianpogi5/pyesa-songs](https://github.com/ianpogi5/pyesa-songs)**.
-
-It is mounted as a git submodule at `public/files/`. This keeps song content private while the app code remains public.
-
-### Updating the submodule
-
-```bash
-cd public/files
-git pull origin main
-cd ../..
-git add public/files
-git commit -m "Update songs submodule"
-```
-
-## CI/CD
-
-A GitHub Action (`.github/workflows/generate-manifest.yml`) regenerates `sets.json` when mass files change on push to `main`. It uses the `SONGS_REPO_TOKEN` secret to access the private submodule.
+| Variable          | Default     | Description                        |
+| ----------------- | ----------- | ---------------------------------- |
+| `PYESA_S3_BUCKET` | `pyesa-web` | S3 bucket name                     |
+| `AWS_PROFILE`     | `pyesa`     | AWS CLI profile for authentication |
 
 ## Deployment
 
-```bash
-npm run deploy
-```
+Deployment is handled via GitHub Actions. There are two ways to deploy:
+
+### Release (recommended)
+
+Creating a release auto-deploys to production. The changelog is generated automatically from commit messages.
+
+1. Go to **Actions → Release → Run workflow**
+2. Enter the version number (e.g. `2.1.0`)
+3. The workflow will:
+   - Bump the version in `package.json`
+   - Auto-generate release notes from commits since the last release
+   - Update `CHANGELOG.md`
+   - Create a GitHub Release with the tag
+4. The published release **automatically triggers the deploy workflow**
+
+> **Tip:** Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, etc.) so the auto-generated changelog is well-organized.
+
+### Manual deploy
+
+You can also trigger a deploy without a release:
+
+1. Go to **Actions → Deploy to Production → Run workflow**
+
+### What the deploy does
+
+1. Checks out the code
+2. Syncs song data from S3 into `public/files/`
+3. Installs dependencies and builds the app
+4. Runs Terraform to ensure infra is up to date
+5. Uploads the built `dist/` to S3
+6. Invalidates the CloudFront cache
+
+### Required GitHub Secrets & Variables
+
+Configured in the repo's **Settings → Secrets and variables → Actions**:
+
+**Secrets** (environment: Production):
+
+| Secret                  | Description        |
+| ----------------------- | ------------------ |
+| `AWS_ACCESS_KEY_ID`     | AWS IAM access key |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key |
+
+**Variables** (environment: Production):
+
+| Variable         | Description                        |
+| ---------------- | ---------------------------------- |
+| `S3_BUCKET`      | S3 bucket name (e.g. `pyesa-web`)  |
+| `AWS_REGION`     | AWS region (e.g. `ap-southeast-1`) |
+| `AWS_ACCOUNT_ID` | AWS account ID                     |
+| `AWS_USER`       | AWS IAM user name                  |
+| `SSL_CERT_ARN`   | ACM certificate ARN for the domain |
+| `DOMAIN`         | Domain name (e.g. `pyesa.kdc.sh`)  |
+| `API_DOMAIN`     | API domain (if applicable)         |
 
 Runs `git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa`.
 

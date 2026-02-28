@@ -24,6 +24,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 FILES_DIR="$PROJECT_ROOT/public/files"
 MASS_DIR="$FILES_DIR/mass"
+AWS_PROFILE="${AWS_PROFILE:-pyesa}"
 
 # ---------- Helpers ----------
 die() { echo "Error: $*" >&2; exit 1; }
@@ -41,6 +42,7 @@ node "$SCRIPT_DIR/generate-manifest.js"
 echo ""
 echo "Syncing to S3 (s3://$S3_BUCKET/$S3_PREFIX/)..."
 aws s3 sync "$FILES_DIR" "s3://$S3_BUCKET/$S3_PREFIX/" \
+  --profile "$AWS_PROFILE" \
   --exclude ".git/*" \
   --content-type "application/json"
 echo "  Sync complete."
