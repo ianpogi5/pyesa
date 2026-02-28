@@ -6,7 +6,7 @@ import SetCard from "../components/SetCard";
 import SongCard from "../components/SongCard";
 import SongViewer from "../components/SongViewer";
 import EmptyState from "../components/EmptyState";
-import { saveSet, getSet, getAllSets } from "../db/index";
+import { saveSet, getSet, getAllSets, getSongCount } from "../db/index";
 import {
   FiMusic,
   FiArrowLeft,
@@ -56,9 +56,12 @@ export default function SetsPage() {
   // Check if all sets are already downloaded
   useEffect(() => {
     if (sets.length === 0) return;
-    getAllSets().then((saved) => {
+    getAllSets().then(async (saved) => {
       const savedNames = new Set(saved.map((s) => s.filename));
-      setAllSetsDownloaded(sets.every((s) => savedNames.has(s.filename)));
+      const allSaved = sets.every((s) => savedNames.has(s.filename));
+      // Also verify songs store has songs (guard against v1→v2 upgrade wipe)
+      const count = await getSongCount();
+      setAllSetsDownloaded(allSaved && count > 0);
     });
   }, [sets]);
 

@@ -4,6 +4,7 @@ const DB_NAME = "pyesa-db";
 const DB_VERSION = 2;
 
 let dbPromise = null;
+let needsSongRebuild = false;
 
 /**
  * Generate a stable slug from a song name for deduplication.
@@ -25,6 +26,7 @@ function getDb() {
         // v1 → v2: switch songs keyPath from Id to slug for deduplication
         if (oldVersion < 2 && db.objectStoreNames.contains("songs")) {
           db.deleteObjectStore("songs");
+          needsSongRebuild = true;
         }
         if (!db.objectStoreNames.contains("songs")) {
           const songStore = db.createObjectStore("songs", { keyPath: "slug" });
@@ -38,6 +40,23 @@ function getDb() {
     });
   }
   return dbPromise;
+}
+
+/**
+ * After a v1→v2 upgrade, rebuild the songs store from cached sets.
+ * Should be called once on app startup.
+ */
+export async function rebuildSongsIfNeeded() {
+  await getDb(); // ensure upgrade ran
+  if (!needsSongRebuild) return false;
+  needsSongRebuild = false;
+  const sets = await getAllSets();
+  for (const set of sets) {
+    if (set.songs && set.songs.length > 0) {
+      await saveSongs(set.songs);
+    }
+  }
+  return true;
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   getSongBySlug,
   saveSet,
   getAllSets,
+  getSongCount,
 } from "../db/index";
 import { FiBook, FiLoader, FiDownloadCloud } from "react-icons/fi";
 
@@ -52,12 +53,14 @@ export default function LibraryPage() {
   useEffect(() => {
     fetch("/files/sets.json")
       .then((r) => r.json())
-      .then((data) => {
+      .then(async (data) => {
         setSetsManifest(data);
-        getAllSets().then((saved) => {
-          const savedNames = new Set(saved.map((s) => s.filename));
-          setAllSetsDownloaded(data.every((s) => savedNames.has(s.filename)));
-        });
+        const saved = await getAllSets();
+        const savedNames = new Set(saved.map((s) => s.filename));
+        const allSetsSaved = data.every((s) => savedNames.has(s.filename));
+        // Also verify songs store actually has songs
+        const songCount = await getSongCount();
+        setAllSetsDownloaded(allSetsSaved && songCount > 0);
       })
       .catch(() => {});
   }, []);

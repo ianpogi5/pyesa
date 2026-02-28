@@ -1,9 +1,16 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import SetsPage from "./pages/SetsPage";
 import LibraryPage from "./pages/LibraryPage";
 import RosarioPage from "./pages/RosarioPage";
+import { rebuildSongsIfNeeded } from "./db/index";
 
 export default function App() {
+  // On startup, rebuild songs store if a v1→v2 DB upgrade wiped it
+  useEffect(() => {
+    rebuildSongsIfNeeded();
+  }, []);
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/sets" replace />} />

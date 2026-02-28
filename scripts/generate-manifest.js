@@ -3,16 +3,18 @@
  * Generates public/files/sets.json from the files in public/files/mass/
  * Run: node scripts/generate-manifest.js
  */
-import { readdirSync, writeFileSync, existsSync } from "fs";
+import { readdirSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const massDir = join(__dirname, "..", "public", "files", "mass");
-const outputPath = join(__dirname, "..", "public", "files", "sets.json");
+const filesDir = join(__dirname, "..", "public", "files");
+const outputPath = join(filesDir, "sets.json");
 
 if (!existsSync(massDir)) {
   console.warn(`Warning: ${massDir} not found — writing empty sets.json`);
+  if (!existsSync(filesDir)) mkdirSync(filesDir, { recursive: true });
   writeFileSync(outputPath, "[]");
   process.exit(0);
 }
