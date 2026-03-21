@@ -47,7 +47,12 @@ die() { echo "Error: $*" >&2; exit 1; }
 command -v aws &>/dev/null || die "AWS CLI is required. Install it: https://aws.amazon.com/cli/"
 command -v node &>/dev/null || die "Node.js is required."
 
+# ---------- Clean new song files ----------
+echo "Cleaning new song files..."
+node "$SCRIPT_DIR/clean-song-files.js"
+
 # ---------- Regenerate manifest ----------
+echo ""
 echo "Regenerating sets.json..."
 node "$SCRIPT_DIR/generate-manifest.js"
 
