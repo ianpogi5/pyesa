@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.99.4] - 2026-03-28
+
+## What's Changed
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v1.99.3...v1.99.4
+
+
 ## [1.99.2] - 2026-02-28
 
 ## What's Changed
