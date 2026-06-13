@@ -41,7 +41,8 @@ export default function SetsPage() {
         // Auto-select latest set only on the very first load
         if (!filename && data.length > 0 && !hasAutoSelected.current) {
           hasAutoSelected.current = true;
-          const today = new Date().toISOString().split("T")[0];
+          const now = new Date();
+          const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
           const past = data.filter((s) => s.date <= today);
           const target = past.length > 0 ? past[0] : data[0];
           navigate(`/sets/${encodeURIComponent(target.filename)}`, {
