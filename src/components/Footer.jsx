@@ -1,6 +1,6 @@
 import { FiGithub, FiHeart } from "react-icons/fi";
 
-const FACEBOOK_URL = "https://www.facebook.com/share/1DtVHgdJom/";
+const FACEBOOK_URL = "https://www.facebook.com/PGChoir";
 const GITHUB_URL = "https://github.com/ianpogi5/pyesa";
 
 export default function Footer() {
