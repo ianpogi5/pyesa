@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.0] - 2026-07-11
+
+## What's Changed
+
+### Features
+- edit published sets, weekly song backup, liturgical name suggestions
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.7...v2.2.0
+
+
 ## [2.1.7] - 2026-07-11
 
 ## What's Changed
