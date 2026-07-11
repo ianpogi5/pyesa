@@ -25,3 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 dev-dist
+
+# Song data — separate git repo (pyesa-songs), synced via S3
+public/files/
