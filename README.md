@@ -1,34 +1,93 @@
-# Pyesa
+# Pyesa 🎶
 
-**Pyesa** is a Progressive Web App (PWA) choir companion for mass. It lets choir members browse weekly song sets, search a full song library, and follow the Rosario Kantada prayer with interactive song markers — all offline-capable and mobile-first.
+**The choir companion for mass.** Weekly song sets, a searchable ChordPro song library, the Rosario Kantada, and a collaborative set builder — offline-capable, installable, and built for phones.
+
+Made with ♥ by [PG Choir](https://www.facebook.com/PGChoir) · Live at [pyesa.kdc.sh](https://pyesa.kdc.sh)
+
+<p align="center">
+  <img src="docs/screenshots/sets.png" width="260" alt="Weekly song set" />
+  <img src="docs/screenshots/viewer.png" width="260" alt="Song viewer with lyrics" />
+  <img src="docs/screenshots/builder.png" width="260" alt="Set builder" />
+</p>
 
 ## Features
 
-- **Sets** — Weekly mass song sets listed by date. Auto-selects the current week. Swipe between songs.
-- **Song Library** — Every song is saved to the browser (IndexedDB), seeded from a canonical `library.json`, and searchable by name, author, subtitle, or lyrics.
-- **Rosario Kantada** — Full prayer text with interactive **(AWIT)** buttons that open a song picker (suggested songs + library search).
-- **Set Builder** — Passcode-protected collaborative editor (`/builder`). Build next week's set on any phone: search the library, add placeholders for songs that still need encoding, reorder, and publish. Publishing writes the set live to the app and creates a shareable page with the song list (Messenger link previews work).
-- **SongbookPro Import** — Upload a SongbookPro `.sbp` export in the Builder to add newly encoded songs to the library; matching placeholders in draft sets resolve automatically.
-- **Dark / Light Mode** — Auto-detects OS preference; manual toggle in the header.
-- **Offline Support** — All assets and song data are pre-cached via a Service Worker. Songs are persisted in IndexedDB.
-- **Installable** — PWA install prompt on supported browsers. Works as a standalone app on mobile and desktop.
-- **ChordPro Rendering** — Songs in ChordPro format are parsed and rendered with chords or lyrics-only mode, adjustable font size, and auto-scroll.
+**For the choir**
 
-## Tech Stack
+- **Sets** — weekly mass song sets by date; auto-selects the current week, swipe between songs.
+- **Song viewer** — ChordPro rendering with lyrics-only or chords mode, adjustable font size, and auto-scroll for hands-free singing.
+- **Library** — every song, searchable by name, author, subtitle, or lyrics; seeded automatically on any device.
+- **Rosario Kantada** — the full prayer with interactive **(AWIT)** markers that open a song picker.
+- **Offline & installable** — a PWA with everything pre-cached; works with zero signal inside the church.
 
-| Layer           | Technology                                 |
-| --------------- | ------------------------------------------ |
-| UI              | React 18, React Router 7                   |
-| Styling         | Tailwind CSS 4 (Catppuccin-inspired theme) |
-| Icons           | react-icons (Feather)                      |
-| Song parsing    | chordsheetjs                               |
-| Offline storage | IndexedDB via `idb`                        |
-| PWA             | vite-plugin-pwa + Workbox                  |
-| Build           | Vite 6                                     |
-| Hosting         | AWS S3 + CloudFront                        |
-| Infra           | Terraform                                  |
+**For whoever builds the set** (passcode-protected `/builder`)
 
-## Project Structure
+- Build next week's set from a phone: search, preview, and add songs in order.
+- **Placeholders** for songs not yet encoded — the set itself becomes the to-do list, and uploading a SongbookPro `.sbp` export resolves them automatically.
+- **This Week's Salmo** — type the two lines of the psalm response; the usual chords are applied automatically.
+- Names suggest themselves from the liturgical calendar (pick July 19, get *16th Sunday in Ordinary Time*).
+- **Publish** makes the set live instantly and creates a share page whose Messenger preview shows the full song list as an image. Published sets can be reopened, edited, and republished.
+
+<p align="center">
+  <img src="docs/screenshots/chords.png" width="195" alt="Chords mode" />
+  <img src="docs/screenshots/library.png" width="195" alt="Library search" />
+  <img src="docs/screenshots/rosario.png" width="195" alt="Rosario Kantada" />
+</p>
+
+**Desktop** gets a split view:
+
+<p align="center">
+  <img src="docs/screenshots/desktop.png" width="800" alt="Desktop split view" />
+</p>
+
+**Messenger share card**, generated at publish time:
+
+<p align="center">
+  <img src="docs/screenshots/share-card.png" width="600" alt="Messenger share card" />
+</p>
+
+## The weekly workflow
+
+1. A choir member opens **`/builder`** on their phone (passcode required once per device) and builds the upcoming Sunday's set — adding **placeholders** for songs that aren't in the library yet.
+2. The maintainer encodes the missing songs in SongbookPro, exports them as a `.sbp`, and uploads it in the Builder. New songs join the library and matching placeholders resolve automatically.
+3. When no placeholders remain, **Publish Set** writes the set live to the app, regenerates the manifests, and creates the share page — paste the link in the choir's Messenger group and the whole song list shows as a card.
+4. The maintainer rebuilds the set inside SongbookPro by picking the songs. (Never *import* a set back into SongbookPro — its importer always duplicates songs. `.sbp` files flow one direction only: SongbookPro → Pyesa.)
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["📱 Builder<br/>(choir member)"] -->|"/api/* writes"| B["λ pyesa-api<br/>(Node 22, no deps)"]
+    S["🎼 SongbookPro"] -->|".sbp upload"| A
+    B -->|"sets, drafts,<br/>library.json, share pages"| C[("S3<br/>source of truth")]
+    C --> D["CloudFront"]
+    D --> E["📱 Choir PWA<br/>(offline via SW + IndexedDB)"]
+    D --> F["💬 Messenger<br/>(share page OG tags)"]
+    C -.->|"weekly backup<br/>(GitHub Action)"| G[("pyesa-songs<br/>git repo")]
+```
+
+- **Frontend:** React 18, React Router 7, Tailwind CSS 4 (Catppuccin-inspired), chordsheetjs, IndexedDB via `idb`, vite-plugin-pwa/Workbox.
+- **Backend:** a single dependency-free Node 22 Lambda (`server/`) behind a CloudFront `/api/*` behavior — drafts CRUD, `.sbp` parsing (hand-rolled zip reader), publishing, share pages. All writes require the `x-pyesa-key` passcode.
+- **Data:** S3 is the source of truth for `files/` (sets, `library.json`, drafts); the [pyesa-songs](https://github.com/ianpogi5/pyesa-songs) repo is a backup, refreshed weekly by the `backup-songs` workflow.
+- **Infra:** Terraform (`infra/`) — S3, CloudFront, Lambda + Function URL.
+
+## Development
+
+```bash
+git clone git@github.com:ianpogi5/pyesa.git
+cd pyesa
+npm install
+npm run dev        # http://localhost:5173 — /api proxies to production (override: PYESA_API_ORIGIN)
+```
+
+```bash
+npm run lint       # eslint src/ server/ scripts/
+npm run test-api   # API smoke tests (in-memory store; uses sample.sbp in repo root if present)
+npm run build      # production build (regenerates sets.json, library.json, liturgy.json)
+npm run preview    # serve the production build locally
+```
+
+### Project structure
 
 ```
 public/
@@ -38,148 +97,34 @@ public/
     sets.json          #   Auto-generated manifest of all sets
     library.json       #   Canonical deduped song library
     rosario-set.json   #   Suggested songs for Rosario AWIT markers
+  liturgy.json         # Generated: date → liturgical day name (build-time romcal)
 scripts/
-  generate-manifest.js # Generates sets.json from mass/ directory
-  generate-library.js  # Merges mass/ songs into library.json
-  upload-song.sh       # Clean → manifest → sync to S3 → git push
-  sync-down.sh         # Pull S3 → public/files → commit to songs repo (backup)
-server/                # API Lambda (set builder backend)
-  index.mjs            #   Lambda entrypoint
-  lib/                 #   Router, .sbp parser, S3 store, share pages...
-  test/run.mjs         #   Smoke tests (npm run test-api)
-src/
-  components/          # Shared UI components (Header, SongViewer, etc.)
-  contexts/            # ThemeContext (dark/light mode)
-  db/                  # IndexedDB layer (songs + sets persistence)
-  hooks/               # useOnlineStatus
-  pages/               # SetsPage, LibraryPage, RosarioPage, BuilderPage
-  api.js               # Client for the set-builder API
-  App.jsx              # Route definitions
-  main.jsx             # Entry point
-  index.css            # Tailwind + custom theme + song styles
-infra/                 # Terraform (S3, CloudFront, Lambda API)
+  generate-manifest.js # sets.json from mass/
+  generate-library.js  # merges mass/ songs into library.json
+  generate-liturgy.js  # liturgy.json for set-name suggestions
+  upload-song.sh       # local song changes → S3 (+ git push)
+  sync-down.sh         # ad-hoc S3 → songs repo backup
+server/                # API Lambda (router, .sbp parser, share pages, S3 store)
+src/                   # React app (pages, components, IndexedDB layer)
+infra/                 # Terraform (S3, CloudFront, Lambda)
 ```
-
-## Set Builder Workflow
-
-The weekly flow between the set builder and SongbookPro:
-
-1. A choir member opens **`/builder`** (passcode required once per device) and creates the set for the upcoming Sunday — searching the library and adding **placeholders** (name, album, artist) for songs not yet encoded.
-2. The maintainer encodes the missing songs in SongbookPro, exports a set containing them (`.sbp`), and uploads it via **Upload .sbp** in the Builder. New songs join `library.json` and matching placeholders resolve automatically.
-3. Once no placeholders remain, **Publish Set** writes `mass/<date> - <name>.json` to S3, regenerates `sets.json`, invalidates CloudFront, and creates a share page (`/share/<slug>.html`) whose link previews the song list in Messenger.
-4. The maintainer rebuilds the set in SongbookPro by picking the songs (never import a set back into SongbookPro — it duplicates songs).
-
-> **Note:** Since the builder writes directly to S3, S3 is the source of truth for `public/files/`. Run `./scripts/sync-down.sh` periodically (and before local edits) to back up S3 → the pyesa-songs repo.
-
-### API
-
-A single Lambda (`server/`) behind the CloudFront `/api/*` behavior handles drafts CRUD, `.sbp` upload, and publishing. All write endpoints require the `x-pyesa-key` passcode header. Run its tests with `npm run test-api` (uses `sample.sbp` in the repo root if present).
-
-In local dev, `/api` is proxied to production (override with `PYESA_API_ORIGIN`).
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm 9+
-- AWS CLI (for uploading songs and deploying)
-
-### Install & Run
-
-```bash
-git clone git@github.com:ianpogi5/pyesa.git
-cd pyesa
-npm install
-npm run dev
-```
-
-The dev server starts at `http://localhost:5173` with HMR and PWA enabled.
-
-### Build for Production
-
-```bash
-npm run build
-npm run preview   # preview the production build locally
-```
-
-## Uploading Song Files
-
-Song data lives in `public/files/` which is a separate private git repo ([ianpogi5/pyesa-songs](https://github.com/ianpogi5/pyesa-songs)). Song files are synced to S3 — the deployed app reads them from there.
-
-### Adding a new song set
-
-1. Export the song set as a JSON file from your song app
-2. Copy it to the mass directory with the naming convention:
-
-   ```bash
-   cp ~/exported-set.json "public/files/mass/2025-12-25 - Christmas Day.json"
-   ```
-
-3. Run the upload script:
-
-   ```bash
-   ./scripts/upload-song.sh
-   ```
-
-   This will:
-   - Regenerate `sets.json` from all files in `public/files/mass/`
-   - Sync everything to S3 (immediately live on the site via CloudFront)
-   - Commit and push changes in the songs repo
-
-### Environment Variables
-
-| Variable          | Default     | Description                        |
-| ----------------- | ----------- | ---------------------------------- |
-| `PYESA_S3_BUCKET` | `pyesa-web` | S3 bucket name                     |
-| `AWS_PROFILE`     | `pyesa`     | AWS CLI profile for authentication |
 
 ## Deployment
 
-Deployment is handled via GitHub Actions. There are two ways to deploy:
+Releases deploy from **Actions → Release & Deploy**: enter a semver version and the workflow bumps `package.json`, generates the changelog from [conventional commits](https://www.conventionalcommits.org/), creates the GitHub release, applies Terraform, uploads the build to S3 (immutable hashed assets, `no-cache` for `sw.js`/`index.html`), and invalidates CloudFront.
 
-### Release (recommended)
+Song data is backed up to the songs repo every Monday (PH time) by **Actions → Backup Songs to Git**, which can also be run manually.
 
-Creating a release auto-deploys to production. The changelog is generated automatically from commit messages.
-
-1. Go to **Actions → Release → Run workflow**
-2. Enter the version number (e.g. `2.1.0`)
-3. The workflow will:
-   - Bump the version in `package.json`
-   - Auto-generate release notes from commits since the last release
-   - Update `CHANGELOG.md`
-   - Create a GitHub Release with the tag
-4. The published release **automatically triggers the deploy workflow**
-
-> **Tip:** Use [conventional commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, etc.) so the auto-generated changelog is well-organized.
-
-### Manual deploy
-
-You can also trigger a deploy without a release:
-
-1. Go to **Actions → Deploy to Production → Run workflow**
-
-### What the deploy does
-
-1. Checks out the code
-2. Syncs song data from S3 into `public/files/`
-3. Installs dependencies and builds the app
-4. Runs Terraform to ensure infra is up to date
-5. Uploads the built `dist/` to S3
-6. Invalidates the CloudFront cache
-
-### Required GitHub Secrets & Variables
-
-Configured in the repo's **Settings → Secrets and variables → Actions**:
+### Required GitHub secrets & variables
 
 **Secrets** (environment: Production):
 
-| Secret                  | Description                                                             |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | AWS IAM access key                                                       |
-| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key                                                       |
-| `API_PASSCODE`          | Shared passcode for the set-builder API                                  |
-| `SONGS_DEPLOY_KEY`      | SSH deploy key (write) on pyesa-songs for the weekly song backup         |
+| Secret                  | Description                                                       |
+| ----------------------- | ----------------------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | AWS IAM access key                                                |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key                                                |
+| `API_PASSCODE`          | Shared passcode for the set-builder API                           |
+| `SONGS_DEPLOY_KEY`      | SSH deploy key (write) on pyesa-songs for the weekly song backup  |
 
 **Variables** (environment: Production):
 
@@ -191,9 +136,7 @@ Configured in the repo's **Settings → Secrets and variables → Actions**:
 | `AWS_USER`       | AWS IAM user name                  |
 | `SSL_CERT_ARN`   | ACM certificate ARN for the domain |
 | `DOMAIN`         | Domain name (e.g. `pyesa.kdc.sh`)  |
-| `API_DOMAIN`     | API domain (if applicable)         |
-
-Runs `git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa`.
+| `API_DOMAIN`     | Unused (legacy)                    |
 
 ## License
 
