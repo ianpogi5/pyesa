@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import SetsPage from "./pages/SetsPage";
 import LibraryPage from "./pages/LibraryPage";
 import RosarioPage from "./pages/RosarioPage";
+import BuilderPage from "./pages/BuilderPage";
 import { rebuildSongsIfNeeded } from "./db/index";
 
 export default function App() {
@@ -19,6 +20,8 @@ export default function App() {
       <Route path="/library" element={<LibraryPage />} />
       <Route path="/library/:songId" element={<LibraryPage />} />
       <Route path="/rosario" element={<RosarioPage />} />
+      <Route path="/builder" element={<BuilderPage />} />
+      <Route path="/builder/:draftId" element={<BuilderPage />} />
       {/* Legacy route */}
       <Route path="/kantada" element={<Navigate to="/rosario" replace />} />
       <Route path="*" element={<Navigate to="/sets" replace />} />

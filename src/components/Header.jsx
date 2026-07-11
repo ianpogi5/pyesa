@@ -9,9 +9,11 @@ import {
   FiMusic,
   FiBook,
   FiHeart,
+  FiEdit3,
 } from "react-icons/fi";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { isUnlocked } from "../api";
 
 export default function Header({ title, showBack, onBack }) {
   const { dark, toggle } = useTheme();
@@ -25,6 +27,9 @@ export default function Header({ title, showBack, onBack }) {
     { to: "/sets", icon: FiMusic, label: "Sets" },
     { to: "/library", icon: FiBook, label: "Library" },
     { to: "/rosario", icon: FiHeart, label: "Rosario" },
+    ...(isUnlocked()
+      ? [{ to: "/builder", icon: FiEdit3, label: "Builder" }]
+      : []),
   ];
 
   useEffect(() => {

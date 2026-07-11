@@ -100,7 +100,7 @@ export default function SongPickerModal({
               &larr; Back
             </button>
           ) : (
-            <h3 className="text-base font-bold flex items-center gap-2">
+            <h3 className="font-bold flex items-center gap-2">
               <FiMusic size={16} className="text-blue" />
               Pick a Song
             </h3>

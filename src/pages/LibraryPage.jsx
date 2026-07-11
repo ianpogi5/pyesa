@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import DesktopSidebar from "../components/DesktopSidebar";
@@ -13,6 +13,7 @@ import {
   saveSet,
   getAllSets,
   getSongCount,
+  seedLibraryFromServer,
 } from "../db/index";
 import { FiBook, FiLoader, FiDownloadCloud } from "react-icons/fi";
 
@@ -23,6 +24,7 @@ export default function LibraryPage() {
   const [allSongs, setAllSongs] = useState([]);
   const [filteredSongs, setFilteredSongs] = useState([]);
   const [query, setQuery] = useState("");
+  const queryRef = useRef("");
   const [selectedSong, setSelectedSong] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mobileView, setMobileView] = useState(songId ? "viewer" : "list");
@@ -48,6 +50,19 @@ export default function LibraryPage() {
   useEffect(() => {
     loadSongs();
   }, [loadSongs]);
+
+  // Merge the canonical server library into IndexedDB, then refresh the
+  // list silently — fills the library on fresh devices without requiring
+  // "Download All" (which is still useful for offline set data).
+  useEffect(() => {
+    seedLibraryFromServer().then(async (seeded) => {
+      if (!seeded) return;
+      const songs = await getAllSongs();
+      songs.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      setAllSongs(songs);
+      if (!queryRef.current.trim()) setFilteredSongs(songs);
+    });
+  }, []);
 
   // Fetch sets manifest to check download state
   useEffect(() => {
@@ -103,6 +118,7 @@ export default function LibraryPage() {
   const handleSearch = useCallback(
     async (q) => {
       setQuery(q);
+      queryRef.current = q;
       if (!q.trim()) {
         setFilteredSongs(allSongs);
       } else {

@@ -53,5 +53,13 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: true,
+    // The API only exists in AWS; proxy /api to production during local dev
+    // (writes go to the live site — override with PYESA_API_ORIGIN if needed).
+    proxy: {
+      "/api": {
+        target: process.env.PYESA_API_ORIGIN || "https://pyesa.kdc.sh",
+        changeOrigin: true,
+      },
+    },
   },
 });

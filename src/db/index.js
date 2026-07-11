@@ -1,23 +1,13 @@
 import { openDB } from "idb";
+import { toSlug } from "../../server/lib/slug.mjs";
+
+export { toSlug };
 
 const DB_NAME = "pyesa-db";
 const DB_VERSION = 2;
 
 let dbPromise = null;
 let needsSongRebuild = false;
-
-/**
- * Generate a stable slug from a song name for deduplication.
- * The same song appearing in different sets will produce the same slug.
- */
-export function toSlug(name) {
-  return (name || "untitled")
-    .trim()
-    .toLowerCase()
-    .replace(/[\s/\\]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function getDb() {
   if (!dbPromise) {
@@ -137,4 +127,21 @@ export async function getAllSets() {
 export async function getSongCount() {
   const db = await getDb();
   return db.count("songs");
+}
+
+/**
+ * Seed the songs store from the canonical server library (library.json).
+ * Returns true if songs were merged in.
+ */
+export async function seedLibraryFromServer() {
+  try {
+    const res = await fetch("/files/library.json");
+    if (!res.ok) return false;
+    const songs = await res.json();
+    if (!Array.isArray(songs) || songs.length === 0) return false;
+    await saveSongs(songs);
+    return true;
+  } catch {
+    return false;
+  }
 }
