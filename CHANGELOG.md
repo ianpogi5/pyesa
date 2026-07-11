@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2] - 2026-07-11
+
+## What's Changed
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.1...v2.1.2
+
+
 ## [2.1.1] - 2026-07-11
 
 ## What's Changed
