@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.1.1] - 2026-07-11
+
+## What's Changed
+
+### Bug Fixes
+- serve sw.js and index.html with no-cache so PWA clients pick up new releases
+- unstage embedded songs repo (public/files) and gitignore it
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.0...v2.1.1
+
+
 ## [2.1.0] - 2026-07-11
 
 ## What's Changed
