@@ -131,6 +131,7 @@ export function createHandler({ store, invalidate, env }) {
         name: draft.name,
         date: draft.date,
         songs,
+        slug: shareSlug,
         // The client uploads the card right after finalize succeeds
         imageUrl: `https://${env.DOMAIN}/share/${shareSlug}.png`,
       }),

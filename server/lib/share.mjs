@@ -11,8 +11,11 @@ function escapeHtml(s) {
  * crawlers read the Open Graph tags (they don't run JS); humans get
  * redirected into the app.
  */
-export function renderSharePage({ domain, filename, name, date, songs, imageUrl }) {
+export function renderSharePage({ domain, filename, name, date, songs, imageUrl, slug }) {
   const appUrl = `https://${domain}/sets/${encodeURIComponent(filename)}`;
+  // og:url must be the share page itself — Facebook scrapes the canonical
+  // URL's tags, and the app URL is a bare SPA shell with none.
+  const pageUrl = `https://${domain}/share/${slug}.html`;
   const title = date ? `${name} — ${date}` : name;
   const songList = songs
     .map((song, i) => `${i + 1}. ${song.name}`)
@@ -35,9 +38,9 @@ export function renderSharePage({ domain, filename, name, date, songs, imageUrl 
 <meta property="og:site_name" content="PG Choir - Pyesa">
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(songList)}">
-<meta property="og:url" content="${escapeHtml(appUrl)}">${imageTags}
+<meta property="og:url" content="${escapeHtml(pageUrl)}">${imageTags}
 <meta name="description" content="${escapeHtml(songList)}">
-<meta http-equiv="refresh" content="0;url=${escapeHtml(appUrl)}">
+<script>location.replace(${JSON.stringify(appUrl)});</script>
 <style>body{font-family:system-ui,sans-serif;background:#1e1e2e;color:#cdd6f4;display:grid;place-items:center;min-height:100vh;margin:0;padding:1rem}a{color:#89b4fa}ol{line-height:1.8}</style>
 </head>
 <body>
