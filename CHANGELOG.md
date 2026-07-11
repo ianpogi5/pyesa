@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.4] - 2026-07-11
+
+## What's Changed
+
+### Bug Fixes
+- exclude /share and /api from service worker navigation fallback
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.3...v2.1.4
+
+
 ## [2.1.3] - 2026-07-11
 
 ## What's Changed
