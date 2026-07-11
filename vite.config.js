@@ -36,6 +36,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Never serve the SPA shell for share pages or the API — share
+        // links must load their real HTML (redirect + OG tags) even when
+        // the service worker controls the navigation
+        navigateFallbackDenylist: [/^\/share\//, /^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /\/files\/.*\.json$/,
