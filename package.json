@@ -4,11 +4,14 @@
   "version": "1.99.6",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/generate-manifest.js && vite --host",
-    "build": "node scripts/generate-manifest.js && vite build --mode production",
-    "lint": "eslint src/",
+    "dev": "npm run generate-data && vite --host",
+    "build": "npm run generate-data && vite build --mode production",
+    "lint": "eslint src/ server/ scripts/",
     "preview": "vite preview",
+    "generate-data": "node scripts/generate-manifest.js && node scripts/generate-library.js",
     "generate-manifest": "node scripts/generate-manifest.js",
+    "generate-library": "node scripts/generate-library.js",
+    "test-api": "node server/test/run.mjs",
     "deploy": "git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa"
   },
   "dependencies": {
