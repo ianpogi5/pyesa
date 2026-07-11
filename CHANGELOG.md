@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0] - 2026-07-11
+
+## What's Changed
+
+### Features
+- add mobile-first set builder page
+- generate canonical library.json and add S3 sync-down backup script
+- add set-builder API Lambda behind CloudFront /api/*
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v1.99.6...v2.0.0
+
+
 ## [1.99.6] - 2026-06-13
 
 ## What's Changed
