@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.6] - 2026-07-11
+
+## What's Changed
+
+### Features
+- cache-busted share images and FB preview refresh button
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.5...v2.1.6
+
+
 ## [2.1.5] - 2026-07-11
 
 ## What's Changed
