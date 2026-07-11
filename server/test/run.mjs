@@ -28,6 +28,9 @@ const store = {
   async putText(key, text) {
     objects.set(key, text);
   },
+  async putBinary(key, buffer) {
+    objects.set(key, buffer);
+  },
   async list(prefix) {
     return [...objects.keys()].filter((k) => k.startsWith(prefix)).sort();
   },
@@ -161,6 +164,61 @@ assert.ok(invalidations.flat().includes("/share/*"), "cloudfront invalidated");
 
 const finDraft = await expect(200, call("GET", `/api/drafts/${draft.id}`), "finalized draft kept");
 assert.equal(finDraft.status, "finalized");
+
+console.log("share image");
+assert.ok(
+  share.includes('og:image" content="https://pyesa.kdc.sh/share/'),
+  "share page references og:image",
+);
+const fakePng = Buffer.concat([
+  Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  Buffer.from("test-image-data"),
+]);
+const img = await expect(
+  200,
+  call("POST", `/api/drafts/${draft.id}/share-image`, { base64: fakePng.toString("base64") }),
+  "upload share image for finalized draft",
+);
+const imgKey = img.imageUrl.replace("https://pyesa.kdc.sh/", "");
+assert.ok(objects.get(imgKey), "png stored");
+await expect(
+  400,
+  call("POST", `/api/drafts/${draft.id}/share-image`, { base64: Buffer.from("not a png").toString("base64") }),
+  "non-PNG rejected",
+);
+
+console.log("create song (quick Salmo)");
+await expect(400, call("POST", "/api/songs", { body: { name: "", content: "x" } }), "song without name rejected");
+const salmo = await expect(
+  201,
+  call("POST", "/api/songs", {
+    body: {
+      name: "Salmo - 2026-07-19",
+      content: "Intro: D\n\n[D]Panginoon [Em]aking tanglaw\n[Em]Siya'ng aking [D]kaligtasan\n",
+      _tags: '["mass","tagalog","salmo"]',
+    },
+  }),
+  "create salmo song",
+);
+assert.equal(salmo.slug, "salmo-2026-07-19");
+assert.ok(salmo.hash, "salmo has content hash");
+assert.ok(
+  JSON.parse(objects.get("files/library.json")).some((s) => s.slug === "salmo-2026-07-19"),
+  "salmo in library",
+);
+const salmo2 = await expect(
+  201,
+  call("POST", "/api/songs", {
+    body: { name: "Salmo - 2026-07-19", content: "Intro: D\n\n[D]Different lyrics now\n" },
+  }),
+  "re-creating same salmo updates in place",
+);
+assert.ok(salmo2.content.includes("Different lyrics"), "content replaced");
+assert.equal(
+  JSON.parse(objects.get("files/library.json")).filter((s) => s.slug === "salmo-2026-07-19").length,
+  1,
+  "no duplicate salmo",
+);
 
 await expect(200, call("DELETE", `/api/drafts/${draft.id}`), "delete draft");
 assert.equal((await store.list("files/drafts/")).length, 0);

@@ -54,4 +54,10 @@ export const api = {
     request(`/api/drafts/${id}/finalize`, { method: "POST" }),
   uploadSbp: async (file) =>
     request("/api/upload-sbp", { method: "POST", raw: await file.arrayBuffer() }),
+  createSong: (song) => request("/api/songs", { method: "POST", body: song }),
+  uploadShareImage: async (draftId, blob) =>
+    request(`/api/drafts/${draftId}/share-image`, {
+      method: "POST",
+      raw: await blob.arrayBuffer(),
+    }),
 };

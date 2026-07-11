@@ -1,4 +1,4 @@
-import { randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID, timingSafeEqual, createHash } from "node:crypto";
 import { toSlug } from "./slug.mjs";
 import { buildSetsManifest } from "./sets.mjs";
 import { mergeSongsIntoLibrary } from "./library.mjs";
@@ -131,6 +131,8 @@ export function createHandler({ store, invalidate, env }) {
         name: draft.name,
         date: draft.date,
         songs,
+        // The client uploads the card right after finalize succeeds
+        imageUrl: `https://${env.DOMAIN}/share/${shareSlug}.png`,
       }),
       "text/html; charset=utf-8",
     );
@@ -236,12 +238,45 @@ export function createHandler({ store, invalidate, env }) {
         }
       }
 
-      const draftMatch = path.match(/^\/api\/drafts\/([\w-]+)(\/finalize)?$/);
+      const draftMatch = path.match(
+        /^\/api\/drafts\/([\w-]+)(\/finalize|\/share-image)?$/,
+      );
       if (draftMatch) {
-        const [, id, finalize] = draftMatch;
+        const [, id, action] = draftMatch;
         const draftKey = `${DRAFTS_PREFIX}${id}.json`;
 
-        if (finalize && method === "POST") return handleFinalize(id);
+        if (action === "/finalize" && method === "POST") {
+          return handleFinalize(id);
+        }
+
+        // Store the share card PNG rendered by the client after finalize
+        if (action === "/share-image" && method === "POST") {
+          const draft = await store.getJson(draftKey);
+          if (!draft) return json(404, { error: "Draft not found" });
+          if (draft.status !== "finalized") {
+            return json(400, { error: "Publish the set before uploading its share image" });
+          }
+          if (!event.body) return json(400, { error: "Missing image body" });
+          const image = Buffer.from(
+            event.body,
+            event.isBase64Encoded ? "base64" : "utf-8",
+          );
+          // PNG magic bytes — reject anything else
+          if (image.length < 8 || image.readUInt32BE(0) !== 0x89504e47) {
+            return json(400, { error: "Not a PNG image" });
+          }
+          if (image.length > 2 * 1024 * 1024) {
+            return json(400, { error: "Image too large" });
+          }
+          const slug = toSlug(`${draft.date}-${draft.name}`);
+          await store.putBinary(`share/${slug}.png`, image, "image/png");
+          await invalidate(["/share/*"]);
+          return json(200, {
+            imageUrl: `https://${env.DOMAIN}/share/${slug}.png`,
+          });
+        }
+
+        if (action) return json(404, { error: `No route for ${method} ${path}` });
 
         if (method === "GET") {
           const draft = await store.getJson(draftKey);
@@ -271,6 +306,47 @@ export function createHandler({ store, invalidate, env }) {
 
       if (method === "POST" && path === "/api/upload-sbp") {
         return handleUploadSbp(event);
+      }
+
+      // Create a song directly (used by the quick-Salmo flow). Songs
+      // normally arrive via .sbp upload; this covers website-authored ones.
+      if (method === "POST" && path === "/api/songs") {
+        const body = JSON.parse(event.body || "{}");
+        const name = cleanName(body.name);
+        const content = (body.content || "").trim();
+        if (!name) return json(400, { error: "Song name is required" });
+        if (!content) return json(400, { error: "Song content is required" });
+
+        const lyrics = content.replace(/\[[^\]]+\]/g, "");
+        const song = {
+          Id: Date.now(),
+          name,
+          author: (body.author || "").trim(),
+          subTitle: (body.subTitle || "").trim(),
+          content,
+          _tags: typeof body._tags === "string" ? body._tags : "[]",
+          DeepSearch: `${name}\n${lyrics}`.toLowerCase(),
+          hash: createHash("md5").update(content).digest("hex"),
+          ModifiedDateTime: new Date().toISOString(),
+          Deleted: false,
+          type: 1,
+          Url: "",
+          Capo: 0,
+        };
+
+        // Explicit save: always overwrite the slug (unlike the .sbp merge,
+        // which only replaces when ModifiedDateTime is newer)
+        const existing = (await store.getJson(LIBRARY_KEY)) || [];
+        const slug = toSlug(name);
+        const stored = { ...song, slug };
+        const songs = existing
+          .filter((s) => (s.slug || toSlug(s.name)) !== slug)
+          .concat(stored)
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        await store.putJson(LIBRARY_KEY, songs);
+        await invalidate(["/files/library.json"]);
+
+        return json(201, stored);
       }
 
       return json(404, { error: `No route for ${method} ${path}` });

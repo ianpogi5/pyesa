@@ -4,8 +4,11 @@ import Layout from "../components/Layout";
 import EmptyState from "../components/EmptyState";
 import SongSelectModal from "../components/SongSelectModal";
 import PlaceholderModal from "../components/PlaceholderModal";
+import SalmoModal from "../components/SalmoModal";
+import SongPreviewModal from "../components/SongPreviewModal";
 import { api, getPasscode, setPasscode, clearPasscode } from "../api";
-import { seedLibraryFromServer } from "../db/index";
+import { seedLibraryFromServer, getSongBySlug, saveSongs } from "../db/index";
+import { buildShareImageBlob } from "../lib/shareImage";
 import {
   FiLock,
   FiPlus,
@@ -21,6 +24,7 @@ import {
   FiCheckCircle,
   FiAlertTriangle,
   FiLink,
+  FiSunrise,
 } from "react-icons/fi";
 
 function nextSundayISO() {
@@ -284,6 +288,8 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
   const [saveState, setSaveState] = useState("saved"); // saved | saving | error
   const [pickerOpen, setPickerOpen] = useState(false);
   const [placeholderOpen, setPlaceholderOpen] = useState(false);
+  const [salmoOpen, setSalmoOpen] = useState(false);
+  const [previewSong, setPreviewSong] = useState(null);
   const [resolveIndex, setResolveIndex] = useState(null); // placeholder being resolved
   const [finalizing, setFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState("");
@@ -387,6 +393,28 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
     });
   };
 
+  const addSalmo = async ({ name, content }) => {
+    const stored = await api.createSong({
+      name,
+      content,
+      _tags: '["mass","tagalog","salmo"]',
+    });
+    await saveSongs([stored]); // make it previewable/searchable immediately
+    setSalmoOpen(false);
+    applyChange({ items: [...draft.items, songItemFrom(stored)] });
+  };
+
+  const openPreview = async (item) => {
+    if (item.type !== "song") return;
+    const song = await getSongBySlug(item.slug);
+    setPreviewSong(
+      song || {
+        name: item.name,
+        content: "Song content hasn't downloaded to this device yet.",
+      },
+    );
+  };
+
   const handleDelete = async () => {
     if (!window.confirm(`Delete "${draft.name}"? This can't be undone.`)) return;
     await api.deleteDraft(draft.id);
@@ -405,6 +433,18 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
     setFinalizeError("");
     try {
       const result = await api.finalizeDraft(draft.id);
+      // Render the Messenger share card (og:image) and upload it.
+      // Non-fatal: the share page works without it, just with no picture.
+      try {
+        const blob = await buildShareImageBlob({
+          name: draft.name,
+          date: draft.date,
+          songs: draft.items.map((i) => i.name),
+        });
+        await api.uploadShareImage(draft.id, blob);
+      } catch {
+        // ignore — text-only share preview
+      }
       setDraft((d) => ({ ...d, status: "finalized", ...result }));
       onFinalized();
     } catch (err) {
@@ -522,7 +562,11 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
               <span className="flex-none w-5 h-5 flex items-center justify-center rounded-full bg-surface text-[10px] font-bold text-subtext">
                 {index + 1}
               </span>
-              <div className="flex-1 min-w-0">
+              <button
+                onClick={() => openPreview(item)}
+                disabled={item.type !== "song"}
+                className="flex-1 min-w-0 text-left"
+              >
                 <p
                   className={`text-sm font-medium leading-tight truncate ${
                     item.type === "placeholder" ? "text-peach" : ""
@@ -545,7 +589,7 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
                     </>
                   )}
                 </p>
-              </div>
+              </button>
               {editable && (
                 <div className="flex-none flex items-center gap-0.5">
                   {item.type === "placeholder" && (
@@ -609,6 +653,13 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
               Missing Song
             </button>
           </div>
+          <button
+            onClick={() => setSalmoOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-lavender bg-lavender/10 rounded-xl hover:bg-lavender/20 transition-colors"
+          >
+            <FiSunrise size={15} />
+            This Week&apos;s Salmo
+          </button>
 
           {placeholderCount > 0 ? (
             <p className="text-xs text-center text-peach py-1">
@@ -646,6 +697,16 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
         open={placeholderOpen}
         onClose={() => setPlaceholderOpen(false)}
         onSave={addPlaceholder}
+      />
+      <SalmoModal
+        open={salmoOpen}
+        onClose={() => setSalmoOpen(false)}
+        onSave={addSalmo}
+        defaultName={`Salmo - ${draft.date}`}
+      />
+      <SongPreviewModal
+        song={previewSong}
+        onClose={() => setPreviewSong(null)}
       />
     </div>
   );

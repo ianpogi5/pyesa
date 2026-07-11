@@ -11,12 +11,19 @@ function escapeHtml(s) {
  * crawlers read the Open Graph tags (they don't run JS); humans get
  * redirected into the app.
  */
-export function renderSharePage({ domain, filename, name, date, songs }) {
+export function renderSharePage({ domain, filename, name, date, songs, imageUrl }) {
   const appUrl = `https://${domain}/sets/${encodeURIComponent(filename)}`;
   const title = date ? `${name} — ${date}` : name;
   const songList = songs
     .map((song, i) => `${i + 1}. ${song.name}`)
     .join(" · ");
+  const imageTags = imageUrl
+    ? `
+<meta property="og:image" content="${escapeHtml(imageUrl)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/png">`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -28,7 +35,7 @@ export function renderSharePage({ domain, filename, name, date, songs }) {
 <meta property="og:site_name" content="PG Choir - Pyesa">
 <meta property="og:title" content="${escapeHtml(title)}">
 <meta property="og:description" content="${escapeHtml(songList)}">
-<meta property="og:url" content="${escapeHtml(appUrl)}">
+<meta property="og:url" content="${escapeHtml(appUrl)}">${imageTags}
 <meta name="description" content="${escapeHtml(songList)}">
 <meta http-equiv="refresh" content="0;url=${escapeHtml(appUrl)}">
 <style>body{font-family:system-ui,sans-serif;background:#1e1e2e;color:#cdd6f4;display:grid;place-items:center;min-height:100vh;margin:0;padding:1rem}a{color:#89b4fa}ol{line-height:1.8}</style>

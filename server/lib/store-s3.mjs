@@ -49,6 +49,17 @@ export function createS3Store(bucket) {
       );
     },
 
+    async putBinary(key, buffer, contentType) {
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: buffer,
+          ContentType: contentType,
+        }),
+      );
+    },
+
     async list(prefix) {
       const keys = [];
       let token;
