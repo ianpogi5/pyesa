@@ -70,4 +70,12 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    proxy: {
+      "/api": {
+        target: process.env.PYESA_API_ORIGIN || "https://pyesa.kdc.sh",
+        changeOrigin: true,
+      },
+    },
+  },
 });

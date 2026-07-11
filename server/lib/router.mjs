@@ -119,10 +119,22 @@ export function createHandler({ store, invalidate, env }) {
     }
 
     const filename = `${draft.date} - ${draft.name}.json`;
+    const shareSlug = toSlug(`${draft.date}-${draft.name}`);
+
+    // Republish after a rename/redate: remove the previous set file and
+    // share assets, or the old set would linger in sets.json alongside it
+    if (draft.filename && draft.filename !== filename) {
+      const oldSlug = toSlug(draft.filename.replace(/\.json$/, ""));
+      await store.remove(`${MASS_PREFIX}${draft.filename}`);
+      if (oldSlug !== shareSlug) {
+        await store.remove(`share/${oldSlug}.html`);
+        await store.remove(`share/${oldSlug}.png`);
+      }
+    }
+
     await store.putJson(`${MASS_PREFIX}${filename}`, { songs });
     await regenerateSetsManifest();
 
-    const shareSlug = toSlug(`${draft.date}-${draft.name}`);
     await store.putText(
       `share/${shareSlug}.html`,
       renderSharePage({
@@ -241,7 +253,7 @@ export function createHandler({ store, invalidate, env }) {
       }
 
       const draftMatch = path.match(
-        /^\/api\/drafts\/([\w-]+)(\/finalize|\/share-image)?$/,
+        /^\/api\/drafts\/([\w-]+)(\/finalize|\/share-image|\/reopen)?$/,
       );
       if (draftMatch) {
         const [, id, action] = draftMatch;
@@ -249,6 +261,17 @@ export function createHandler({ store, invalidate, env }) {
 
         if (action === "/finalize" && method === "POST") {
           return handleFinalize(id);
+        }
+
+        // Reopen a published set for editing; republishing overwrites
+        // (and cleans up renamed files in handleFinalize)
+        if (action === "/reopen" && method === "POST") {
+          const draft = await store.getJson(draftKey);
+          if (!draft) return json(404, { error: "Draft not found" });
+          draft.status = "active";
+          draft.updatedAt = new Date().toISOString();
+          await store.putJson(draftKey, draft);
+          return json(200, draft);
         }
 
         // Store the share card PNG rendered by the client after finalize

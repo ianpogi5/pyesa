@@ -52,6 +52,7 @@ export const api = {
   deleteDraft: (id) => request(`/api/drafts/${id}`, { method: "DELETE" }),
   finalizeDraft: (id) =>
     request(`/api/drafts/${id}/finalize`, { method: "POST" }),
+  reopenDraft: (id) => request(`/api/drafts/${id}/reopen`, { method: "POST" }),
   uploadSbp: async (file) =>
     request("/api/upload-sbp", { method: "POST", raw: await file.arrayBuffer() }),
   createSong: (song) => request("/api/songs", { method: "POST", body: song }),

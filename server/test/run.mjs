@@ -187,6 +187,32 @@ await expect(
   "non-PNG rejected",
 );
 
+console.log("reopen and republish under a new name");
+const reopened = await expect(
+  200,
+  call("POST", `/api/drafts/${draft.id}/reopen`),
+  "reopen finalized draft",
+);
+assert.equal(reopened.status, "active", "draft editable again");
+await expect(
+  200,
+  call("PUT", `/api/drafts/${draft.id}`, { body: { name: "Renamed Sunday Set" } }),
+  "rename reopened draft",
+);
+const fin2 = await expect(
+  200,
+  call("POST", `/api/drafts/${draft.id}/finalize`),
+  "republish after rename",
+);
+assert.equal(fin2.filename, "2026-07-19 - Renamed Sunday Set.json");
+assert.ok(objects.get(`files/mass/${fin2.filename}`), "new mass file written");
+assert.ok(!objects.has(`files/mass/${fin.filename}`), "old mass file removed");
+assert.ok(!objects.has(sharePath), "old share page removed");
+assert.ok(!objects.has(imgKey), "old share image removed");
+const manifest2 = JSON.parse(objects.get("files/sets.json"));
+assert.equal(manifest2.length, 1, "no duplicate set in manifest");
+assert.equal(manifest2[0].name, "Renamed Sunday Set");
+
 console.log("create song (quick Salmo)");
 await expect(400, call("POST", "/api/songs", { body: { name: "", content: "x" } }), "song without name rejected");
 const salmo = await expect(

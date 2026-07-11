@@ -9,6 +9,7 @@ import SongPreviewModal from "../components/SongPreviewModal";
 import { api, getPasscode, setPasscode, clearPasscode } from "../api";
 import { seedLibraryFromServer, getSongBySlug, saveSongs } from "../db/index";
 import { buildShareImageBlob } from "../lib/shareImage";
+import { suggestSetName } from "../lib/liturgy";
 import {
   FiLock,
   FiPlus,
@@ -109,6 +110,28 @@ function DraftsList({ drafts, loading, onOpen, onCreate, onUpload, uploadResult,
   const [date, setDate] = useState(nextSundayISO());
   const [creating, setCreating] = useState(false);
   const fileRef = useRef(null);
+  const suggestionRef = useRef("");
+
+  // Prefill the name from the liturgical calendar for the picked date;
+  // never clobber something the user typed themselves
+  useEffect(() => {
+    if (!showNew) return;
+    let cancelled = false;
+    suggestSetName(date)
+      .then((suggestion) => {
+        if (cancelled || !suggestion) return;
+        setName((current) =>
+          current === "" || current === suggestionRef.current
+            ? suggestion
+            : current,
+        );
+        suggestionRef.current = suggestion;
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [showNew, date]);
 
   const create = async () => {
     if (!name.trim() || creating) return;
@@ -416,6 +439,19 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
     );
   };
 
+  const handleReopen = async () => {
+    if (
+      !window.confirm(
+        `Edit "${draft.name}"? The published set stays live until you publish again.`,
+      )
+    )
+      return;
+    const reopened = await api.reopenDraft(draft.id);
+    versionRef.current = 0; // fresh baseline, nothing to autosave yet
+    setDraft(reopened);
+    onFinalized(); // refresh the drafts list status
+  };
+
   const handleDelete = async () => {
     if (!window.confirm(`Delete "${draft.name}"? This can't be undone.`)) return;
     await api.deleteDraft(draft.id);
@@ -548,6 +584,14 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
                   <FiRefreshCw size={12} />
                   Refresh FB preview
                 </a>
+                <button
+                  onClick={handleReopen}
+                  className="flex items-center gap-1.5 text-xs font-medium text-peach px-2.5 py-1.5 bg-peach/10 rounded-lg"
+                  title="Reopen for editing — republish when done"
+                >
+                  <FiEdit3 size={12} />
+                  Edit Set
+                </button>
               </div>
             )}
           </div>

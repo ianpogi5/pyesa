@@ -28,3 +28,6 @@ dev-dist
 
 # Song data — separate git repo (pyesa-songs), synced via S3
 public/files/
+
+# Generated at build time by scripts/generate-liturgy.js
+public/liturgy.json

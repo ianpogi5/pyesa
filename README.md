@@ -174,11 +174,12 @@ Configured in the repo's **Settings → Secrets and variables → Actions**:
 
 **Secrets** (environment: Production):
 
-| Secret                  | Description                                  |
-| ----------------------- | -------------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | AWS IAM access key                           |
-| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key                           |
-| `API_PASSCODE`          | Shared passcode for the set-builder API      |
+| Secret                  | Description                                                             |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | AWS IAM access key                                                       |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key                                                       |
+| `API_PASSCODE`          | Shared passcode for the set-builder API                                  |
+| `SONGS_REPO_TOKEN`      | Fine-grained PAT (Contents rw on pyesa-songs) for the weekly song backup |
 
 **Variables** (environment: Production):
 

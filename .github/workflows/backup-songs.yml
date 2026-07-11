@@ -1,0 +1,49 @@
+name: Backup Songs to Git
+
+# S3 is the source of truth for song data (the set builder writes to it
+# directly). This backs it up to the pyesa-songs repo weekly, after Sunday.
+#
+# Requires a repo secret SONGS_REPO_TOKEN: a fine-grained personal access
+# token with Contents read/write on ianpogi5/pyesa-songs.
+
+on:
+  schedule:
+    - cron: "0 16 * * 0" # Sunday 16:00 UTC = Monday 00:00 PH time
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Checkout songs repo
+        uses: actions/checkout@v4
+        with:
+          repository: ianpogi5/pyesa-songs
+          token: ${{ secrets.SONGS_REPO_TOKEN }}
+          path: songs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Sync song data from S3
+        run: |
+          aws s3 sync "s3://${{ vars.S3_BUCKET }}/files/" songs/ --exclude ".git/*"
+
+      - name: Commit and push
+        working-directory: songs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to back up."
+          else
+            git commit -m "Backup from S3 $(date +%Y-%m-%d)"
+            git push
+            echo "Backup pushed."
+          fi
