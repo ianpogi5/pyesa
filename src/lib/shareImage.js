@@ -1,12 +1,17 @@
 /**
  * Renders the Messenger/Facebook share card (og:image) for a published
- * set: 1200x630 PNG with the full numbered song list. Rendered in the
- * browser at publish time (canvas), so the Lambda stays dependency-free.
+ * set: 1200x1200 PNG with the full numbered song list. Square renders
+ * roughly twice as tall as landscape in a phone Messenger bubble (the
+ * primary surface) without getting cropped on other Facebook surfaces.
+ * Rendered in the browser at publish time (canvas), so the Lambda stays
+ * dependency-free.
  */
 
-const W = 1200;
-const H = 630;
-const MARGIN = 64;
+export const SHARE_IMAGE_SIZE = 1200;
+
+const W = SHARE_IMAGE_SIZE;
+const H = SHARE_IMAGE_SIZE;
+const MARGIN = 72;
 
 // Catppuccin mocha (the app's dark theme)
 const COLORS = {
@@ -30,69 +35,60 @@ export async function buildShareImageBlob({ name, date, songs }) {
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = COLORS.panel;
-  ctx.fillRect(0, 0, W, 172);
+  ctx.fillRect(0, 0, W, 220);
   ctx.fillStyle = COLORS.blue;
-  ctx.fillRect(0, 172, W, 4);
+  ctx.fillRect(0, 220, W, 5);
 
   // Eyebrow
   ctx.fillStyle = COLORS.blue;
-  ctx.font = `700 24px ${FONT}`;
-  ctx.fillText("PG CHOIR  ·  PYESA", MARGIN, 64);
+  ctx.font = `700 32px ${FONT}`;
+  ctx.fillText("PG CHOIR  ·  PYESA", MARGIN, 84);
 
   // Title (shrink to fit) + date
-  let titleSize = 54;
+  let titleSize = 64;
   ctx.font = `800 ${titleSize}px ${FONT}`;
-  while (ctx.measureText(name).width > W - MARGIN * 2 && titleSize > 30) {
+  while (ctx.measureText(name).width > W - MARGIN * 2 && titleSize > 36) {
     titleSize -= 2;
     ctx.font = `800 ${titleSize}px ${FONT}`;
   }
   ctx.fillStyle = COLORS.text;
-  ctx.fillText(name, MARGIN, 124);
+  ctx.fillText(name, MARGIN, 156);
   ctx.fillStyle = COLORS.subtext;
-  ctx.font = `500 26px ${FONT}`;
-  ctx.fillText(formatDate(date), MARGIN, 160);
+  ctx.font = `500 34px ${FONT}`;
+  ctx.fillText(formatDate(date), MARGIN, 200);
 
-  // Song list: one column up to 8 songs, two columns up to 16, then "+N more"
-  const listTop = 232;
-  const listBottom = H - 72;
-  const twoCols = songs.length > 8;
-  const perCol = twoCols ? 8 : songs.length;
-  const shown = songs.slice(0, twoCols ? 16 : 8);
-  const lineHeight = Math.min(52, Math.floor((listBottom - listTop) / perCol));
-  const colWidth = twoCols ? (W - MARGIN * 2 - 48) / 2 : W - MARGIN * 2;
-  const size = twoCols ? 28 : 32;
+  // Song list: one big readable column (typical sets are 10–14 songs)
+  const listTop = 300;
+  const listBottom = H - 110;
+  const maxShown = 18;
+  const shown = songs.slice(0, maxShown);
+  const lineHeight = Math.min(64, Math.floor((listBottom - listTop) / shown.length));
+  const size = Math.min(44, lineHeight - 14);
 
   shown.forEach((song, i) => {
-    const col = Math.floor(i / perCol);
-    const row = i % perCol;
-    const x = MARGIN + col * (colWidth + 48);
-    const y = listTop + row * lineHeight;
+    const y = listTop + i * lineHeight;
 
     ctx.fillStyle = COLORS.blue;
-    ctx.font = `700 ${size - 6}px ${FONT}`;
-    ctx.fillText(String(i + 1).padStart(2, " "), x, y);
+    ctx.font = `700 ${size - 8}px ${FONT}`;
+    ctx.fillText(String(i + 1).padStart(2, " "), MARGIN, y);
 
     ctx.fillStyle = COLORS.text;
     ctx.font = `600 ${size}px ${FONT}`;
-    ctx.fillText(truncate(ctx, song, colWidth - 56), x + 52, y);
+    ctx.fillText(truncate(ctx, song, W - MARGIN * 2 - 72), MARGIN + 72, y);
   });
 
   if (songs.length > shown.length) {
     ctx.fillStyle = COLORS.subtext;
-    ctx.font = `500 26px ${FONT}`;
-    ctx.fillText(
-      `+ ${songs.length - shown.length} more`,
-      MARGIN,
-      listBottom + 40,
-    );
+    ctx.font = `500 32px ${FONT}`;
+    ctx.fillText(`+ ${songs.length - shown.length} more`, MARGIN, listBottom + 44);
   }
 
   // Footer
   ctx.fillStyle = COLORS.surface;
-  ctx.fillRect(0, H - 56, W, 56);
+  ctx.fillRect(0, H - 72, W, 72);
   ctx.fillStyle = COLORS.subtext;
-  ctx.font = `500 22px ${FONT}`;
-  ctx.fillText("pyesa.kdc.sh", MARGIN, H - 20);
+  ctx.font = `500 28px ${FONT}`;
+  ctx.fillText("pyesa.kdc.sh", MARGIN, H - 26);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
