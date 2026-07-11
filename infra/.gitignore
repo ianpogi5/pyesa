@@ -2,6 +2,9 @@
 # Local .terraform directories
 **/.terraform/*
 
+# Lambda zip built by archive_file
+build/
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

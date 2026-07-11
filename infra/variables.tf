@@ -21,5 +21,12 @@ variable "S3_BUCKET" {
 
 variable "API_DOMAIN" {
   type        = string
-  description = ""
+  default     = ""
+  description = "Unused (legacy). Kept so existing TF_VAR_API_DOMAIN wiring doesn't break."
+}
+
+variable "API_PASSCODE" {
+  type        = string
+  sensitive   = true
+  description = "Shared passcode required by the set-builder API Lambda"
 }

@@ -6,6 +6,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.4"
+    }
   }
 }
 
@@ -159,46 +163,17 @@ resource "aws_cloudfront_distribution" "pyesa" {
     # response_headers_policy_id = "19955003-7f85-47c7-ad66-e98bfa653b6f"
   }
 
-  # API Gateway Routing
+  # API Lambda routing (set builder backend)
   ordered_cache_behavior {
-    path_pattern           = "/api/files"
-    target_origin_id       = "APIGatewayOrigin"
+    path_pattern           = "/api/*"
+    target_origin_id       = "ApiLambdaOrigin"
     viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
-    cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    min_ttl                = 0
-    default_ttl            = 0
-    max_ttl                = 0
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
     compress               = true
 
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization"]
-      cookies {
-        forward = "all"
-      }
-    }
-  }
-
-  # API Gateway Routing
-  ordered_cache_behavior {
-    path_pattern           = "/api/files/*.json"
-    target_origin_id       = "APIGatewayOrigin"
-    viewer_protocol_policy = "redirect-to-https"
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"] //, "POST", "PUT", "PATCH", "DELETE"]
-    cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    min_ttl                = 31536000
-    default_ttl            = 31536000
-    max_ttl                = 31536000
-    compress               = true
-
-    forwarded_values {
-      query_string = true
-      headers      = ["Authorization"]
-      cookies {
-        forward = "all"
-      }
-    }
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
   }
 
   origin {
@@ -208,8 +183,9 @@ resource "aws_cloudfront_distribution" "pyesa" {
   }
 
   origin {
-    domain_name = "${var.API_DOMAIN}" # Replace with your API Gateway's base domain
-    origin_id   = "APIGatewayOrigin"
+    # Lambda Function URL: strip scheme and trailing slash to get the domain
+    domain_name = trimsuffix(trimprefix(aws_lambda_function_url.api.function_url, "https://"), "/")
+    origin_id   = "ApiLambdaOrigin"
 
     custom_origin_config {
       http_port              = 80

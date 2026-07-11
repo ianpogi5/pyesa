@@ -1,0 +1,282 @@
+import { randomUUID, timingSafeEqual } from "node:crypto";
+import { toSlug } from "./slug.mjs";
+import { buildSetsManifest } from "./sets.mjs";
+import { mergeSongsIntoLibrary } from "./library.mjs";
+import { parseSbp } from "./sbp.mjs";
+import { matchPlaceholder } from "./match.mjs";
+import { renderSharePage } from "./share.mjs";
+
+const LIBRARY_KEY = "files/library.json";
+const DRAFTS_PREFIX = "files/drafts/";
+const MASS_PREFIX = "files/mass/";
+
+function json(statusCode, body) {
+  return {
+    statusCode,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  };
+}
+
+function safeEqual(a, b) {
+  const bufA = Buffer.from(a || "");
+  const bufB = Buffer.from(b || "");
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
+
+/** Reject names that would break filenames or S3 keys. */
+function cleanName(name) {
+  return (name || "").replace(/[/\\]/g, "-").trim();
+}
+
+function songItemFrom(song) {
+  return {
+    type: "song",
+    slug: song.slug,
+    name: song.name,
+    author: song.author || "",
+    subTitle: song.subTitle || "",
+  };
+}
+
+/**
+ * Create the API handler. Dependencies are injected so tests can run
+ * against an in-memory store.
+ *
+ * store: getJson(key) | putJson(key, obj) | putText(key, text, contentType)
+ *        | list(prefix) → key[] | remove(key)
+ * invalidate: (paths[]) → Promise
+ * env: { PASSCODE, DOMAIN }
+ */
+export function createHandler({ store, invalidate, env }) {
+  async function listDrafts() {
+    const keys = await store.list(DRAFTS_PREFIX);
+    const drafts = [];
+    for (const key of keys) {
+      if (!key.endsWith(".json")) continue;
+      const draft = await store.getJson(key);
+      if (draft) drafts.push(draft);
+    }
+    drafts.sort((a, b) => (b.updatedAt || "").localeCompare(a.updatedAt || ""));
+    return drafts;
+  }
+
+  async function regenerateSetsManifest() {
+    const keys = await store.list(MASS_PREFIX);
+    const filenames = keys
+      .map((key) => key.slice(MASS_PREFIX.length))
+      .filter(Boolean);
+    const manifest = buildSetsManifest(filenames);
+    await store.putJson("files/sets.json", manifest);
+    return manifest;
+  }
+
+  function validateDraftInput(body) {
+    const name = cleanName(body.name);
+    const date = (body.date || "").trim();
+    if (!name) return { error: "Set name is required" };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date))
+      return { error: "Date must be YYYY-MM-DD" };
+    const items = Array.isArray(body.items) ? body.items : [];
+    for (const item of items) {
+      if (item.type === "song" && !item.slug)
+        return { error: "Song items need a slug" };
+      if (item.type === "placeholder" && !cleanName(item.name))
+        return { error: "Placeholders need a song name" };
+      if (item.type !== "song" && item.type !== "placeholder")
+        return { error: `Unknown item type "${item.type}"` };
+    }
+    return { name, date, items };
+  }
+
+  async function handleFinalize(draftId) {
+    const draftKey = `${DRAFTS_PREFIX}${draftId}.json`;
+    const draft = await store.getJson(draftKey);
+    if (!draft) return json(404, { error: "Draft not found" });
+
+    const placeholders = draft.items.filter((i) => i.type === "placeholder");
+    if (placeholders.length > 0) {
+      return json(400, {
+        error: "Set still has placeholder songs that need encoding",
+        placeholders: placeholders.map((p) => p.name),
+      });
+    }
+    if (draft.items.length === 0) {
+      return json(400, { error: "Set has no songs" });
+    }
+
+    const library = (await store.getJson(LIBRARY_KEY)) || [];
+    const bySlug = new Map(library.map((song) => [song.slug, song]));
+    const songs = [];
+    for (const item of draft.items) {
+      const song = bySlug.get(item.slug);
+      if (!song) {
+        return json(400, {
+          error: `Song "${item.name}" is missing from the library`,
+        });
+      }
+      songs.push(song);
+    }
+
+    const filename = `${draft.date} - ${draft.name}.json`;
+    await store.putJson(`${MASS_PREFIX}${filename}`, { songs });
+    await regenerateSetsManifest();
+
+    const shareSlug = toSlug(`${draft.date}-${draft.name}`);
+    await store.putText(
+      `share/${shareSlug}.html`,
+      renderSharePage({
+        domain: env.DOMAIN,
+        filename,
+        name: draft.name,
+        date: draft.date,
+        songs,
+      }),
+      "text/html; charset=utf-8",
+    );
+
+    draft.status = "finalized";
+    draft.finalizedAt = new Date().toISOString();
+    draft.updatedAt = draft.finalizedAt;
+    draft.filename = filename;
+    draft.shareUrl = `https://${env.DOMAIN}/share/${shareSlug}.html`;
+    await store.putJson(draftKey, draft);
+
+    await invalidate(["/files/*", "/share/*"]);
+    return json(200, { filename, shareUrl: draft.shareUrl });
+  }
+
+  async function handleUploadSbp(event) {
+    if (!event.body) return json(400, { error: "Missing request body" });
+    const buffer = Buffer.from(
+      event.body,
+      event.isBase64Encoded ? "base64" : "utf-8",
+    );
+
+    let parsed;
+    try {
+      parsed = parseSbp(buffer);
+    } catch (err) {
+      return json(400, { error: err.message });
+    }
+
+    const existing = (await store.getJson(LIBRARY_KEY)) || [];
+    const { songs, added, updated } = mergeSongsIntoLibrary(
+      existing,
+      parsed.songs,
+    );
+    await store.putJson(LIBRARY_KEY, songs);
+
+    // Resolve placeholders in active drafts against the merged library
+    const resolved = [];
+    for (const draft of await listDrafts()) {
+      if (draft.status !== "active") continue;
+      let changed = false;
+      draft.items = draft.items.map((item) => {
+        if (item.type !== "placeholder") return item;
+        const song = matchPlaceholder(item, songs);
+        if (!song) return item;
+        changed = true;
+        resolved.push({ draft: draft.name, placeholder: item.name, song: song.name });
+        return songItemFrom(song);
+      });
+      if (changed) {
+        draft.updatedAt = new Date().toISOString();
+        await store.putJson(`${DRAFTS_PREFIX}${draft.id}.json`, draft);
+      }
+    }
+
+    await invalidate(["/files/library.json", "/files/drafts/*"]);
+    return json(200, {
+      songsAdded: added,
+      songsUpdated: updated,
+      totalSongs: songs.length,
+      placeholdersResolved: resolved,
+    });
+  }
+
+  return async function handler(event) {
+    const method = event.requestContext?.http?.method || "GET";
+    const path = event.rawPath || "/";
+
+    try {
+      if (method === "GET" && path === "/api/health") {
+        return json(200, { ok: true });
+      }
+
+      // Everything else requires the passcode
+      const key =
+        event.headers?.["x-pyesa-key"] || event.headers?.["X-Pyesa-Key"];
+      if (!env.PASSCODE || !safeEqual(key, env.PASSCODE)) {
+        return json(401, { error: "Wrong or missing passcode" });
+      }
+
+      if (method === "GET" && path === "/api/auth/check") {
+        return json(200, { ok: true });
+      }
+
+      if (path === "/api/drafts") {
+        if (method === "GET") return json(200, await listDrafts());
+        if (method === "POST") {
+          const body = JSON.parse(event.body || "{}");
+          const input = validateDraftInput(body);
+          if (input.error) return json(400, input);
+          const now = new Date().toISOString();
+          const draft = {
+            id: randomUUID(),
+            name: input.name,
+            date: input.date,
+            status: "active",
+            items: input.items,
+            createdAt: now,
+            updatedAt: now,
+          };
+          await store.putJson(`${DRAFTS_PREFIX}${draft.id}.json`, draft);
+          return json(201, draft);
+        }
+      }
+
+      const draftMatch = path.match(/^\/api\/drafts\/([\w-]+)(\/finalize)?$/);
+      if (draftMatch) {
+        const [, id, finalize] = draftMatch;
+        const draftKey = `${DRAFTS_PREFIX}${id}.json`;
+
+        if (finalize && method === "POST") return handleFinalize(id);
+
+        if (method === "GET") {
+          const draft = await store.getJson(draftKey);
+          return draft ? json(200, draft) : json(404, { error: "Draft not found" });
+        }
+        if (method === "PUT") {
+          const draft = await store.getJson(draftKey);
+          if (!draft) return json(404, { error: "Draft not found" });
+          const body = JSON.parse(event.body || "{}");
+          const input = validateDraftInput({ ...draft, ...body });
+          if (input.error) return json(400, input);
+          const updated = {
+            ...draft,
+            name: input.name,
+            date: input.date,
+            items: input.items,
+            updatedAt: new Date().toISOString(),
+          };
+          await store.putJson(draftKey, updated);
+          return json(200, updated);
+        }
+        if (method === "DELETE") {
+          await store.remove(draftKey);
+          return json(200, { ok: true });
+        }
+      }
+
+      if (method === "POST" && path === "/api/upload-sbp") {
+        return handleUploadSbp(event);
+      }
+
+      return json(404, { error: `No route for ${method} ${path}` });
+    } catch (err) {
+      console.error(err);
+      return json(500, { error: "Internal error" });
+    }
+  };
+}
