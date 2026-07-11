@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.5] - 2026-07-11
+
+## What's Changed
+
+### Features
+- square 1200x1200 share card for bigger Messenger previews
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.4...v2.1.5
+
+
 ## [2.1.4] - 2026-07-11
 
 ## What's Changed
