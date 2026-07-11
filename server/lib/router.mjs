@@ -132,8 +132,9 @@ export function createHandler({ store, invalidate, env }) {
         date: draft.date,
         songs,
         slug: shareSlug,
-        // The client uploads the card right after finalize succeeds
-        imageUrl: `https://${env.DOMAIN}/share/${shareSlug}.png`,
+        // The client uploads the card right after finalize succeeds.
+        // ?v= busts Facebook's per-URL image cache on republish.
+        imageUrl: `https://${env.DOMAIN}/share/${shareSlug}.png?v=${Date.now()}`,
       }),
       "text/html; charset=utf-8",
     );

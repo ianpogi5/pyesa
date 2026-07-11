@@ -25,6 +25,7 @@ import {
   FiAlertTriangle,
   FiLink,
   FiSunrise,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 function nextSundayISO() {
@@ -523,7 +524,7 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
               {draft.date} · Published
             </p>
             {draft.shareUrl && (
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => navigator.clipboard?.writeText(draft.shareUrl)}
                   className="flex items-center gap-1.5 text-xs font-medium text-blue px-2.5 py-1.5 bg-blue/10 rounded-lg"
@@ -536,6 +537,16 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
                   className="text-xs font-medium text-subtext px-2.5 py-1.5 bg-surface rounded-lg"
                 >
                   View in app
+                </a>
+                <a
+                  href={`https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(draft.shareUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-xs font-medium text-teal px-2.5 py-1.5 bg-teal/10 rounded-lg"
+                  title="If Messenger shows an outdated preview, press Scrape Again on Facebook's debugger"
+                >
+                  <FiRefreshCw size={12} />
+                  Refresh FB preview
                 </a>
               </div>
             )}
