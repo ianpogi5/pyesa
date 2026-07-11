@@ -101,6 +101,19 @@ resource "aws_lambda_permission" "api_url" {
   function_url_auth_type = "NONE"
 }
 
+# Since October 2025, function URLs ALSO require lambda:InvokeFunction
+# (scoped with the lambda:InvokedViaFunctionUrl condition). The provider
+# can't express that condition yet (hashicorp/terraform-provider-aws#44829),
+# so the statement is managed out-of-band. If the function is ever
+# recreated, re-add it with:
+#
+#   aws lambda add-permission --function-name pyesa-api \
+#     --statement-id AllowPublicInvokeViaFunctionUrl \
+#     --action lambda:InvokeFunction --principal '*' \
+#     --invoked-via-function-url
+#
+# Move it into an aws_lambda_permission resource once #44829 ships.
+
 # Managed CloudFront policies for the /api/* behavior
 data "aws_cloudfront_cache_policy" "caching_disabled" {
   name = "Managed-CachingDisabled"
