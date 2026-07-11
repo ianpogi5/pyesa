@@ -31,3 +31,6 @@ public/files/
 
 # Generated at build time by scripts/generate-liturgy.js
 public/liturgy.json
+
+# e2e fixture is a fake test song, allow it despite *.sbp
+!e2e/fixtures/*.sbp

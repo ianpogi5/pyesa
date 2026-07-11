@@ -16,7 +16,15 @@ npm run test-api   # API Lambda smoke tests (in-memory store; uses sample.sbp in
 npm run preview    # preview production build
 ```
 
-The only tests are the API smoke tests (`server/test/run.mjs`). There is no frontend test suite.
+Tests: `npm run test-api` (API smoke tests, `server/test/run.mjs`) plus a browser e2e suite for the set builder:
+
+```bash
+npm run e2e-api                                   # real router + in-memory store on :8787 (passcode 1234)
+PYESA_API_ORIGIN=http://localhost:8787 npm run dev  # or `vite preview` to test the production build
+npm run e2e                                       # BASE_URL / CHROMIUM_BIN env overrides available
+```
+
+`npm run readme-shots` regenerates `docs/screenshots/` for the README (needs the same two servers). Both drive a system Chromium via playwright-core. Gotcha: pages render list UIs twice (hidden desktop + mobile copies) — Playwright selectors need `.last()` or visibility filtering.
 
 Use conventional commits (`feat:`, `fix:`, `chore:`, ...) — the release workflow auto-generates the changelog from commit prefixes.
 

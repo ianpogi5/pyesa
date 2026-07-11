@@ -12,7 +12,10 @@
     "generate-manifest": "node scripts/generate-manifest.js",
     "generate-library": "node scripts/generate-library.js",
     "test-api": "node server/test/run.mjs",
-    "deploy": "git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa"
+    "deploy": "git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa",
+    "e2e-api": "node e2e/local-api.mjs",
+    "e2e": "node e2e/drive.mjs",
+    "readme-shots": "node e2e/readme-shots.mjs"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -34,6 +37,7 @@
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "playwright-core": "^1.61.1",
     "romcal": "^1.3.0",
     "vite": "^6.0.5",
     "vite-plugin-pwa": "^0.21.1"
