@@ -5,8 +5,10 @@
 ## Features
 
 - **Sets** — Weekly mass song sets listed by date. Auto-selects the current week. Swipe between songs.
-- **Song Library** — Every song ever loaded is saved to the browser (IndexedDB) and searchable by name, author, subtitle, or lyrics.
+- **Song Library** — Every song is saved to the browser (IndexedDB), seeded from a canonical `library.json`, and searchable by name, author, subtitle, or lyrics.
 - **Rosario Kantada** — Full prayer text with interactive **(AWIT)** buttons that open a song picker (suggested songs + library search).
+- **Set Builder** — Passcode-protected collaborative editor (`/builder`). Build next week's set on any phone: search the library, add placeholders for songs that still need encoding, reorder, and publish. Publishing writes the set live to the app and creates a shareable page with the song list (Messenger link previews work).
+- **SongbookPro Import** — Upload a SongbookPro `.sbp` export in the Builder to add newly encoded songs to the library; matching placeholders in draft sets resolve automatically.
 - **Dark / Light Mode** — Auto-detects OS preference; manual toggle in the header.
 - **Offline Support** — All assets and song data are pre-cached via a Service Worker. Songs are persisted in IndexedDB.
 - **Installable** — PWA install prompt on supported browsers. Works as a standalone app on mobile and desktop.
@@ -30,24 +32,50 @@
 
 ```
 public/
-  files/               # Song data (separate private git repo)
+  files/               # Song data (separate private git repo; S3 is source of truth)
     mass/              #   Song set JSON files (YYYY-MM-DD - Name.json)
+    drafts/            #   Set-builder drafts (written by the API)
     sets.json          #   Auto-generated manifest of all sets
+    library.json       #   Canonical deduped song library
     rosario-set.json   #   Suggested songs for Rosario AWIT markers
 scripts/
   generate-manifest.js # Generates sets.json from mass/ directory
-  upload-song.sh       # Regenerate manifest → sync to S3 → git push
+  generate-library.js  # Merges mass/ songs into library.json
+  upload-song.sh       # Clean → manifest → sync to S3 → git push
+  sync-down.sh         # Pull S3 → public/files → commit to songs repo (backup)
+server/                # API Lambda (set builder backend)
+  index.mjs            #   Lambda entrypoint
+  lib/                 #   Router, .sbp parser, S3 store, share pages...
+  test/run.mjs         #   Smoke tests (npm run test-api)
 src/
   components/          # Shared UI components (Header, SongViewer, etc.)
   contexts/            # ThemeContext (dark/light mode)
   db/                  # IndexedDB layer (songs + sets persistence)
   hooks/               # useOnlineStatus
-  pages/               # SetsPage, LibraryPage, RosarioPage
+  pages/               # SetsPage, LibraryPage, RosarioPage, BuilderPage
+  api.js               # Client for the set-builder API
   App.jsx              # Route definitions
   main.jsx             # Entry point
   index.css            # Tailwind + custom theme + song styles
-infra/                 # Terraform (S3, CloudFront, etc.)
+infra/                 # Terraform (S3, CloudFront, Lambda API)
 ```
+
+## Set Builder Workflow
+
+The weekly flow between the set builder and SongbookPro:
+
+1. A choir member opens **`/builder`** (passcode required once per device) and creates the set for the upcoming Sunday — searching the library and adding **placeholders** (name, album, artist) for songs not yet encoded.
+2. The maintainer encodes the missing songs in SongbookPro, exports a set containing them (`.sbp`), and uploads it via **Upload .sbp** in the Builder. New songs join `library.json` and matching placeholders resolve automatically.
+3. Once no placeholders remain, **Publish Set** writes `mass/<date> - <name>.json` to S3, regenerates `sets.json`, invalidates CloudFront, and creates a share page (`/share/<slug>.html`) whose link previews the song list in Messenger.
+4. The maintainer rebuilds the set in SongbookPro by picking the songs (never import a set back into SongbookPro — it duplicates songs).
+
+> **Note:** Since the builder writes directly to S3, S3 is the source of truth for `public/files/`. Run `./scripts/sync-down.sh` periodically (and before local edits) to back up S3 → the pyesa-songs repo.
+
+### API
+
+A single Lambda (`server/`) behind the CloudFront `/api/*` behavior handles drafts CRUD, `.sbp` upload, and publishing. All write endpoints require the `x-pyesa-key` passcode header. Run its tests with `npm run test-api` (uses `sample.sbp` in the repo root if present).
+
+In local dev, `/api` is proxied to production (override with `PYESA_API_ORIGIN`).
 
 ## Getting Started
 
@@ -146,10 +174,11 @@ Configured in the repo's **Settings → Secrets and variables → Actions**:
 
 **Secrets** (environment: Production):
 
-| Secret                  | Description        |
-| ----------------------- | ------------------ |
-| `AWS_ACCESS_KEY_ID`     | AWS IAM access key |
-| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key |
+| Secret                  | Description                                  |
+| ----------------------- | -------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | AWS IAM access key                           |
+| `AWS_SECRET_ACCESS_KEY` | AWS IAM secret key                           |
+| `API_PASSCODE`          | Shared passcode for the set-builder API      |
 
 **Variables** (environment: Production):
 

@@ -1,0 +1,67 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+Pyesa is a PWA choir companion for mass: weekly song sets, a searchable song library, and the Rosario Kantada prayer with interactive song pickers. Offline-first, mobile-first. React 18 + Vite 6 + Tailwind CSS 4, hosted on S3/CloudFront.
+
+## Commands
+
+```bash
+npm run dev        # regenerates sets.json + library.json, then starts Vite dev server (http://localhost:5173, PWA enabled in dev; /api proxies to prod unless PYESA_API_ORIGIN is set)
+npm run build      # regenerates data files, then production build to dist/
+npm run lint       # eslint src/ server/ scripts/
+npm run test-api   # API Lambda smoke tests (in-memory store; uses sample.sbp in repo root if present)
+npm run preview    # preview production build
+```
+
+The only tests are the API smoke tests (`server/test/run.mjs`). There is no frontend test suite.
+
+Use conventional commits (`feat:`, `fix:`, `chore:`, ...) — the release workflow auto-generates the changelog from commit prefixes.
+
+## Song data (public/files/)
+
+`public/files/` is a **separate private git repo** ([ianpogi5/pyesa-songs](https://github.com/ianpogi5/pyesa-songs)), intentionally untracked in this repo. **S3 is the source of truth** (the set-builder API writes directly to it); the git repo is a backup maintained via `scripts/sync-down.sh`. The deploy workflow syncs S3 → `public/files/` before building.
+
+- `mass/YYYY-MM-DD - Name.json` — song set files; `scripts/generate-manifest.js` parses date and name out of the filename to build `sets.json` (newest first). Runs automatically before dev/build, together with `scripts/generate-library.js` which **merges** (never regenerates from scratch — songs uploaded via `.sbp` may not be in any set yet) all mass songs into `library.json`, the canonical deduped-by-slug song library.
+- `drafts/<uuid>.json` — set-builder drafts, written only by the API.
+- `rosario-set.json` — suggested songs for the Rosario AWIT markers.
+- Raw song-app exports start with a `1.0` line; `scripts/clean-song-files.js` strips it and keeps only the `songs` array.
+- `scripts/upload-song.sh` publishes local song changes: cleans files, regenerates the manifest, syncs to S3, invalidates CloudFront `/files/*`, then commits/pushes the songs repo. Uses `AWS_PROFILE=pyesa` and bucket `PYESA_S3_BUCKET` (default `pyesa-web`); reads `.env` if present.
+
+Song JSON shape: songs have `Id`, `name`, `subTitle`, `author`, `content` (ChordPro format), `Url` (YouTube), `_tags` (JSON string array), `DeepSearch` (searchable lyrics text), plus a `slug` (stable, from `toSlug(name)` in `server/lib/slug.mjs` — the single shared implementation used by frontend, scripts, and Lambda).
+
+## SongbookPro .sbp format (reverse-engineered, validated)
+
+`.sbp` = zip of `dataFile.txt` + `dataFile.hash` (MD5 hex of dataFile.txt bytes). `dataFile.txt` = `1.0\r\n` + minified JSON `{songs, sets, folders}`. Parsed by `server/lib/sbp.mjs` (hand-rolled zip reader in `zip.mjs` — no dependencies, keeps the Lambda bundle dependency-free). **Never generate .sbp files for import into SongbookPro** — its import remaps IDs and always duplicates songs (tested); .sbp flows one direction only: SongbookPro → website.
+
+## Set-builder API (server/)
+
+Node 22 Lambda, zero npm dependencies (AWS SDK v3 comes with the runtime). `server/lib/router.mjs` has all routes with injectable store (see `test/run.mjs` for the in-memory harness). Deployed by Terraform (`infra/api.tf`) behind the CloudFront `/api/*` behavior → Lambda Function URL (no CORS needed, same origin). Auth = `x-pyesa-key` header checked against the `PASSCODE` env var (from GitHub secret `API_PASSCODE` → `TF_VAR_API_PASSCODE`). Finalizing a draft writes the mass file, regenerates `sets.json`, writes a `share/<slug>.html` OG-tag page (Messenger link previews), and invalidates CloudFront. The Lambda discovers the distribution ID at runtime (avoids a Terraform cycle).
+
+**Gotcha:** the directory is named `server/` (not `api/`) because Vite serves repo files at their path — an `api/` directory would collide with the `/api/*` CloudFront/proxy namespace.
+
+**Tailwind gotcha:** this theme defines `--color-base`, so `text-base` is a *color* (white in dark theme values) — never use it as a font-size utility; writing `bg-blue text-base text-sm` (color + size) is the intended pattern for filled buttons.
+
+## Architecture
+
+### Offline-first data flow
+
+Pages fetch JSON from `/files/...` and persist everything to IndexedDB via `src/db/index.js` (the only DB module, using `idb`). Load order in `SetsPage`: IndexedDB first (instant render), then background refresh from network. Two layers of offline support:
+
+1. **Service worker** (`vite.config.js`, vite-plugin-pwa/Workbox): precaches app shell; `NetworkFirst` runtime cache for `/files/*.json`.
+2. **IndexedDB** (`pyesa-db`): `sets` store keyed by filename, `songs` store keyed by `slug` (stable slug from song name, deduplicating the same song across sets — see `toSlug`). Saving a set also upserts its songs, which is how the Library accumulates every song ever loaded.
+
+The DB uses versioned upgrade migrations (`DB_VERSION`). If a migration drops the songs store, `rebuildSongsIfNeeded()` (called once from `App.jsx`) rebuilds it from cached sets. Bump `DB_VERSION` and handle `oldVersion` when changing schema.
+
+### UI structure
+
+- Four pages (`src/pages/`), routed in `App.jsx`; each page owns both layouts: a desktop split view (sidebar + content) and a mobile state machine (`mobileView`: `"sets" | "songs" | "viewer"`) rendered from the same component, switched with Tailwind `md:` breakpoints. (`BuilderPage` mounts its editor once and switches the *container* visibility instead — don't render stateful editors twice.)
+- `BuilderPage` (`/builder`) is passcode-gated (`src/api.js`, localStorage key `pyesa-key`); the Builder tab in `Header`/`BottomTabBar` appears only when unlocked. Drafts autosave (debounced PUT, version counter) with a localStorage crash backup preferred when newer than the server copy.
+- `SongViewer` renders ChordPro via `chordsheetjs`: lyrics-only mode uses a custom renderer over the parsed song (skips chord/intro lines); chords mode uses `TextFormatter`. Also handles font size, auto-scroll, and swipe navigation between songs.
+- Theming: Catppuccin-inspired semantic tokens defined in `src/index.css` under `@theme` (e.g. `bg-surface`, `text-subtext`, `bg-mantle`) with dark overrides under `.dark`, toggled by `ThemeContext`. Always use these semantic color names, not raw Tailwind palette colors.
+
+### Deploy
+
+Single workflow `.github/workflows/release.yml` (manual dispatch with a semver version): bumps `package.json`, generates changelog from conventional commits, creates a GitHub release, then deploys — syncs song data from S3, builds, applies Terraform (`infra/`), uploads `dist/` to S3, invalidates CloudFront. App deploys and song uploads are independent pipelines.
