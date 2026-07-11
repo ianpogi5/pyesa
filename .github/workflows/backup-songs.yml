@@ -3,8 +3,8 @@ name: Backup Songs to Git
 # S3 is the source of truth for song data (the set builder writes to it
 # directly). This backs it up to the pyesa-songs repo weekly, after Sunday.
 #
-# Requires a repo secret SONGS_REPO_TOKEN: a fine-grained personal access
-# token with Contents read/write on ianpogi5/pyesa-songs.
+# Auth: SONGS_DEPLOY_KEY repo secret — an SSH deploy key with write
+# access on ianpogi5/pyesa-songs (scoped to that one repo only).
 
 on:
   schedule:
@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ianpogi5/pyesa-songs
-          token: ${{ secrets.SONGS_REPO_TOKEN }}
+          ssh-key: ${{ secrets.SONGS_DEPLOY_KEY }}
           path: songs
 
       - name: Configure AWS credentials
