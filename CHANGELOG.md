@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.1.7] - 2026-07-11
+
+## What's Changed
+
+### Bug Fixes
+- revert share card to landscape — Messenger groups crop tall images
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.1.6...v2.1.7
+
+
 ## [2.1.6] - 2026-07-11
 
 ## What's Changed
