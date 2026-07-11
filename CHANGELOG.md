@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0] - 2026-07-11
+
+## What's Changed
+
+### Features
+- song preview, quick-salmo, share card image, and footer
+
+### Bug Fixes
+- document out-of-band lambda:InvokeFunction permission for function URL
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.0.0...v2.1.0
+
+
 ## [2.0.0] - 2026-07-11
 
 ## What's Changed
