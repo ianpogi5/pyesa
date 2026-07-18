@@ -177,7 +177,7 @@ export function createHandler({ store, invalidate, env }) {
     }
 
     const existing = (await store.getJson(LIBRARY_KEY)) || [];
-    const { songs, added, updated } = mergeSongsIntoLibrary(
+    const { songs, added, updated, changed } = mergeSongsIntoLibrary(
       existing,
       parsed.songs,
     );
@@ -208,6 +208,9 @@ export function createHandler({ store, invalidate, env }) {
       songsUpdated: updated,
       totalSongs: songs.length,
       placeholdersResolved: resolved,
+      // Full song objects so the client can seed IndexedDB directly
+      // instead of racing the CloudFront invalidation of library.json
+      songs: changed,
     });
   }
 

@@ -824,6 +824,11 @@ export default function BuilderPage() {
     setUploadResult(null);
     try {
       const result = await api.uploadSbp(file);
+      // Seed IndexedDB from the response itself — the library.json refetch
+      // below can lose the race against the CloudFront invalidation
+      if (Array.isArray(result.songs) && result.songs.length > 0) {
+        await saveSongs(result.songs);
+      }
       setUploadResult(result);
       refreshDrafts();
       seedLibraryFromServer();

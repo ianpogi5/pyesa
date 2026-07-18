@@ -119,6 +119,9 @@ const upload = await expect(
 assert.equal(upload.songsAdded, 13, "13 songs added to empty library");
 assert.equal(upload.placeholdersResolved.length, 1, "one placeholder resolved");
 assert.equal(upload.placeholdersResolved[0].song, "Magpuri sa Panginoong");
+assert.equal(upload.songs.length, 13, "response includes the added songs");
+assert.ok(upload.songs[0].slug, "returned songs carry a slug");
+assert.ok(upload.songs[0].content, "returned songs carry content");
 
 const upload2 = await expect(
   200,
@@ -126,6 +129,7 @@ const upload2 = await expect(
   "re-upload is idempotent",
 );
 assert.equal(upload2.songsAdded, 0, "no duplicates on re-upload");
+assert.equal(upload2.songs.length, 0, "no changed songs on re-upload");
 
 const draft2 = await expect(200, call("GET", `/api/drafts/${draft.id}`), "get draft after upload");
 assert.equal(draft2.items[0].type, "song", "placeholder became song");

@@ -27,6 +27,9 @@ export function createS3Store(bucket) {
       }
     },
 
+    // no-cache matches the deploy workflow's header for non-asset files:
+    // browsers must revalidate, or clients heuristically cache stale JSON
+    // (Cache-Control-less responses are "fresh" for 10% of their age)
     async putJson(key, obj) {
       await s3.send(
         new PutObjectCommand({
@@ -34,6 +37,7 @@ export function createS3Store(bucket) {
           Key: key,
           Body: JSON.stringify(obj, null, 2),
           ContentType: "application/json",
+          CacheControl: "no-cache",
         }),
       );
     },
@@ -45,6 +49,7 @@ export function createS3Store(bucket) {
           Key: key,
           Body: text,
           ContentType: contentType,
+          CacheControl: "no-cache",
         }),
       );
     },
@@ -56,6 +61,7 @@ export function createS3Store(bucket) {
           Key: key,
           Body: buffer,
           ContentType: contentType,
+          CacheControl: "no-cache",
         }),
       );
     },

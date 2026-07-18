@@ -135,7 +135,10 @@ export async function getSongCount() {
  */
 export async function seedLibraryFromServer() {
   try {
-    const res = await fetch("/files/library.json");
+    // no-cache forces revalidation: library.json written before the API
+    // set Cache-Control headers can sit heuristically "fresh" in the
+    // browser HTTP cache for hours after an upload changed it
+    const res = await fetch("/files/library.json", { cache: "no-cache" });
     if (!res.ok) return false;
     const songs = await res.json();
     if (!Array.isArray(songs) || songs.length === 0) return false;
