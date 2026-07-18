@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.2.1] - 2026-07-18
+
+## What's Changed
+
+### Bug Fixes
+- stale library cache hid uploaded songs in the builder
+- use SSH deploy key for songs backup instead of PAT
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.2.0...v2.2.1
+
+
 ## [2.2.0] - 2026-07-11
 
 ## What's Changed
