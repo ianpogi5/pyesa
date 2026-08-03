@@ -27,7 +27,41 @@ import {
   FiLink,
   FiSunrise,
   FiRefreshCw,
+  FiShare2,
+  FiCheck,
 } from "react-icons/fi";
+
+// Phones get the native share sheet (straight into Messenger); desktop copies.
+const canWebShare =
+  typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+// navigator.clipboard is missing on insecure origins and older in-app browsers,
+// and writeText can reject when the page isn't focused — fall back to execCommand.
+async function copyText(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the legacy path
+  }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch {
+    return false;
+  }
+}
 
 function nextSundayISO() {
   const d = new Date();
@@ -317,6 +351,7 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
   const [resolveIndex, setResolveIndex] = useState(null); // placeholder being resolved
   const [finalizing, setFinalizing] = useState(false);
   const [finalizeError, setFinalizeError] = useState("");
+  const [shareState, setShareState] = useState("idle"); // idle | copied | failed
   const versionRef = useRef(0);
   const backupKey = `pyesa-draft-backup-${draftId}`;
 
@@ -437,6 +472,28 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
         content: "Song content hasn't downloaded to this device yet.",
       },
     );
+  };
+
+  // Clear the "Copied!" confirmation after a beat
+  useEffect(() => {
+    if (shareState !== "copied") return;
+    const timer = setTimeout(() => setShareState("idle"), 2500);
+    return () => clearTimeout(timer);
+  }, [shareState]);
+
+  const handleShare = async () => {
+    const url = draft.shareUrl;
+    if (canWebShare) {
+      try {
+        await navigator.share({ title: draft.name, url });
+        setShareState("idle");
+        return;
+      } catch (err) {
+        if (err?.name === "AbortError") return; // she dismissed the sheet
+        // sharing unavailable here — fall through and copy instead
+      }
+    }
+    setShareState((await copyText(url)) ? "copied" : "failed");
   };
 
   const handleReopen = async () => {
@@ -562,11 +619,24 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
             {draft.shareUrl && (
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <button
-                  onClick={() => navigator.clipboard?.writeText(draft.shareUrl)}
-                  className="flex items-center gap-1.5 text-xs font-medium text-blue px-2.5 py-1.5 bg-blue/10 rounded-lg"
+                  onClick={handleShare}
+                  className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
+                    shareState === "copied"
+                      ? "text-green bg-green/10"
+                      : "text-blue bg-blue/10"
+                  }`}
                 >
-                  <FiLink size={12} />
-                  Copy share link
+                  {shareState === "copied" ? (
+                    <>
+                      <FiCheck size={12} />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      {canWebShare ? <FiShare2 size={12} /> : <FiLink size={12} />}
+                      {canWebShare ? "Share link" : "Copy share link"}
+                    </>
+                  )}
                 </button>
                 <a
                   href={`/sets/${encodeURIComponent(draft.filename)}`}
@@ -592,6 +662,21 @@ function DraftEditor({ draftId, onDeleted, onFinalized }) {
                   <FiEdit3 size={12} />
                   Edit Set
                 </button>
+              </div>
+            )}
+            {shareState === "failed" && (
+              <div className="mt-2">
+                <p className="text-xs text-peach mb-1">
+                  This device blocked the copy. Tap the link below, hold to
+                  select it, then copy.
+                </p>
+                <input
+                  type="text"
+                  readOnly
+                  value={draft.shareUrl}
+                  onFocus={(e) => e.target.select()}
+                  className="w-full px-2.5 py-1.5 text-xs bg-surface text-subtext rounded-lg outline-none"
+                />
               </div>
             )}
           </div>

@@ -28,6 +28,7 @@ const context = await browser.newContext({
   deviceScaleFactor: 2,
   isMobile: true,
   hasTouch: true,
+  permissions: ["clipboard-read", "clipboard-write"],
 });
 const page = await context.newPage();
 page.on("console", (msg) => msg.type() === "error" && errors.push(msg.text()));
@@ -129,6 +130,14 @@ try {
   await page.waitForSelector("text=Published");
   await page.waitForSelector('button:has-text("Copy share link")');
   await shot("07-published");
+
+  step("share link copies with visible confirmation");
+  await page.click('button:has-text("Copy share link")');
+  await page.waitForSelector('button:has-text("Copied!")', { timeout: 4000 });
+  const copied = await page.evaluate(() => navigator.clipboard.readText());
+  if (!/^https?:\/\/.+\/share\/.+\.html$/.test(copied))
+    throw new Error(`Clipboard holds "${copied}", not a share URL`);
+  await page.waitForSelector('button:has-text("Copy share link")', { timeout: 6000 });
 
   step("reopen published set and republish");
   await page.click('button:has-text("Edit Set")');
