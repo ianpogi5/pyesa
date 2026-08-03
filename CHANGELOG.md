@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.2.2] - 2026-08-03
+
+## What's Changed
+
+### Bug Fixes
+- share link button gave no feedback and could fail silently
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.2.1...v2.2.2
+
+
 ## [2.2.1] - 2026-07-18
 
 ## What's Changed
