@@ -21,6 +21,23 @@ const MAX_FONT = 72;
 // otherwise drive the whole song down to single digits. Below it, lines wrap.
 const MIN_FIT_FONT = 14;
 const PREFS_KEY = "pyesa-viewer-prefs";
+// Safari puts a floating close button in the top-left corner of any element it
+// takes natively fullscreen, right where the title sits. Clear it.
+const NATIVE_FS_GUTTER = 64;
+
+// Launched from the home screen there is no browser chrome to hide, so native
+// fullscreen would only add Safari's close button on top of our own overlay.
+function isStandalone() {
+  try {
+    return (
+      window.navigator.standalone === true ||
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches
+    );
+  } catch {
+    return false;
+  }
+}
 
 // Viewer preferences outlive the session; a private window or blocked storage
 // just falls back to the defaults.
@@ -116,6 +133,8 @@ export default function SongViewer({
   const [fullscreen, setFullscreen] = useState(false);
   // Fullscreen sizes the text to the widest line; a manual +/- turns this off
   const [autoFit, setAutoFit] = useState(false);
+  const [nativeFs, setNativeFs] = useState(false);
+  const [wakeLockHeld, setWakeLockHeld] = useState(false);
   const contentRef = useRef(null);
   const containerRef = useRef(null);
   const scrollIntervalRef = useRef(null);
@@ -257,6 +276,38 @@ export default function SongViewer({
     };
   }, [fullscreen, autoFit, fitFontSize, song?.Id, lyricsOnly]);
 
+  // Keep the screen awake while performing. Safari only grants this inside a
+  // user gesture, so the first request is fired straight from the toggle
+  // handler rather than from an effect.
+  const acquireWakeLock = useCallback(async () => {
+    // No API means no secure context - plain http over a LAN address has none.
+    // Served over https it is available from Safari 16.4 on.
+    if (!navigator.wakeLock) {
+      setWakeLockHeld(false);
+      return;
+    }
+    try {
+      const lock = await navigator.wakeLock.request("screen");
+      wakeLockRef.current = lock;
+      setWakeLockHeld(true);
+      lock.addEventListener?.("release", () => {
+        if (wakeLockRef.current === lock) {
+          wakeLockRef.current = null;
+          setWakeLockHeld(false);
+        }
+      });
+    } catch {
+      setWakeLockHeld(false);
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    const lock = wakeLockRef.current;
+    wakeLockRef.current = null;
+    setWakeLockHeld(false);
+    lock?.release?.().catch(() => {});
+  }, []);
+
   // Fullscreen: CSS overlay always, native Fullscreen API when supported
   // (iOS Safari has no Element.requestFullscreen, so the overlay is the fallback).
   const exitFullscreen = useCallback(() => {
@@ -270,16 +321,21 @@ export default function SongViewer({
     if (fullscreen) {
       exitFullscreen();
     } else {
-      containerRef.current?.requestFullscreen?.().catch(() => {});
+      if (!isStandalone()) {
+        containerRef.current?.requestFullscreen?.().catch(() => {});
+      }
+      acquireWakeLock();
       setAutoFit(true);
       setFullscreen(true);
     }
-  }, [fullscreen, exitFullscreen]);
+  }, [fullscreen, exitFullscreen, acquireWakeLock]);
 
   // Leaving native fullscreen (Esc, browser gesture) drops the overlay too
   useEffect(() => {
     const onChange = () => {
-      if (!document.fullscreenElement) setFullscreen(false);
+      const active = !!document.fullscreenElement;
+      setNativeFs(active);
+      if (!active) setFullscreen(false);
     };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
@@ -295,34 +351,24 @@ export default function SongViewer({
     return () => window.removeEventListener("keydown", onKey);
   }, [fullscreen, exitFullscreen]);
 
-  // Keep the screen awake while performing; re-acquire after the tab is hidden
+  // iOS drops the lock whenever the page is backgrounded, so take it again on
+  // the way back, and let it go as soon as fullscreen ends.
   useEffect(() => {
-    if (!fullscreen) return;
-    let cancelled = false;
-
-    const acquire = async () => {
-      try {
-        const lock = await navigator.wakeLock?.request("screen");
-        if (cancelled) lock?.release?.().catch(() => {});
-        else wakeLockRef.current = lock;
-      } catch {
-        // unsupported or denied - not fatal
+    if (!fullscreen) {
+      releaseWakeLock();
+      return;
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === "visible" && !wakeLockRef.current) {
+        acquireWakeLock();
       }
     };
-
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") acquire();
-    };
-
-    acquire();
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
-      cancelled = true;
       document.removeEventListener("visibilitychange", onVisibility);
-      wakeLockRef.current?.release?.().catch(() => {});
-      wakeLockRef.current = null;
+      releaseWakeLock();
     };
-  }, [fullscreen]);
+  }, [fullscreen, acquireWakeLock, releaseWakeLock]);
 
   // Never leave the browser stuck in native fullscreen if the viewer unmounts
   useEffect(
@@ -394,6 +440,11 @@ export default function SongViewer({
         className={`flex-none bg-mantle border-b border-surface px-4 md:px-6 ${
           fullscreen ? "pt-2 pb-1.5" : "pt-3 pb-2"
         }`}
+        style={
+          fullscreen && nativeFs
+            ? { paddingLeft: NATIVE_FS_GUTTER }
+            : undefined
+        }
       >
         <h2
           className={`font-bold leading-tight ${
@@ -486,7 +537,13 @@ export default function SongViewer({
                 ? "bg-blue text-base"
                 : "bg-surface text-subtext hover:bg-surface-hover"
             }`}
-            title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            title={
+              fullscreen
+                ? wakeLockHeld
+                  ? "Exit fullscreen (screen staying awake)"
+                  : "Exit fullscreen (screen may sleep - needs https)"
+                : "Fullscreen"
+            }
             aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {fullscreen ? <FiMinimize size={14} /> : <FiMaximize size={14} />}
