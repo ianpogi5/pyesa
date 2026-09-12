@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.4.0] - 2026-09-12
+
+## What's Changed
+
+### Features
+- foot pedal and keyboard control of the song viewer
+- pace auto-scroll to each song's length instead of a fixed rate
+
+### Bug Fixes
+- background set refresh no longer yanks the performer back to song 1
+
+### Other Changes
+- test: e2e suite for the viewer's performance features
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.3.0...v2.4.0
+
+
 ## [2.3.0] - 2026-09-12
 
 ## What's Changed
