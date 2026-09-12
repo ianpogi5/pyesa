@@ -20,6 +20,24 @@ const MAX_FONT = 72;
 // Auto-fit never shrinks past this - on a narrow phone the longest line would
 // otherwise drive the whole song down to single digits. Below it, lines wrap.
 const MIN_FIT_FONT = 14;
+const PREFS_KEY = "pyesa-viewer-prefs";
+
+// Viewer preferences outlive the session; a private window or blocked storage
+// just falls back to the defaults.
+function loadPrefs() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
+    return {
+      lyricsOnly:
+        typeof stored.lyricsOnly === "boolean" ? stored.lyricsOnly : true,
+      fontSize: Number.isFinite(stored.fontSize)
+        ? Math.min(MAX_FONT, Math.max(MIN_FONT, stored.fontSize))
+        : 16,
+    };
+  } catch {
+    return { lyricsOnly: true, fontSize: 16 };
+  }
+}
 
 function parseSong(content) {
   try {
@@ -89,8 +107,11 @@ export default function SongViewer({
   currentIndex,
   totalSongs,
 }) {
-  const [lyricsOnly, setLyricsOnly] = useState(true);
-  const [fontSize, setFontSize] = useState(16);
+  const [lyricsOnly, setLyricsOnly] = useState(() => loadPrefs().lyricsOnly);
+  // The remembered size. Fullscreen auto-fit overrides the rendered size
+  // through fitSize without overwriting what the user picked.
+  const [fontSize, setFontSize] = useState(() => loadPrefs().fontSize);
+  const [fitSize, setFitSize] = useState(null);
   const [autoScroll, setAutoScroll] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   // Fullscreen sizes the text to the widest line; a manual +/- turns this off
@@ -102,6 +123,20 @@ export default function SongViewer({
   const wakeLockRef = useRef(null);
 
   const parsed = useMemo(() => parseSong(song?.content), [song?.content]);
+
+  // Size actually rendered: the auto-fitted one while it is in charge
+  const displaySize = fullscreen && autoFit && fitSize ? fitSize : fontSize;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        PREFS_KEY,
+        JSON.stringify({ lyricsOnly, fontSize }),
+      );
+    } catch {
+      // storage unavailable - preferences stay session-only
+    }
+  }, [lyricsOnly, fontSize]);
 
   // Reset scroll on song change
   useEffect(() => {
@@ -187,7 +222,7 @@ export default function SongViewer({
     if (!widest || !widestAt) return;
 
     const fitted = Math.floor((widestAt * available) / widest);
-    setFontSize(Math.min(MAX_FONT, Math.max(MIN_FIT_FONT, fitted)));
+    setFitSize(Math.min(MAX_FONT, Math.max(MIN_FIT_FONT, fitted)));
   }, []);
 
   // Re-fit on entering fullscreen, and on anything that changes the line widths
@@ -409,22 +444,22 @@ export default function SongViewer({
             <button
               onClick={() => {
                 setAutoFit(false);
-                setFontSize((s) => Math.max(s - 2, MIN_FONT));
+                setFontSize(Math.max(displaySize - 2, MIN_FONT));
               }}
-              disabled={fontSize <= MIN_FONT}
+              disabled={displaySize <= MIN_FONT}
               className="p-1.5 text-subtext hover:text-text disabled:opacity-30 transition-colors"
             >
               <FiMinus size={14} />
             </button>
             <span className="text-xs text-subtext w-6 text-center">
-              {fontSize}
+              {displaySize}
             </span>
             <button
               onClick={() => {
                 setAutoFit(false);
-                setFontSize((s) => Math.min(s + 2, MAX_FONT));
+                setFontSize(Math.min(displaySize + 2, MAX_FONT));
               }}
-              disabled={fontSize >= MAX_FONT}
+              disabled={displaySize >= MAX_FONT}
               className="p-1.5 text-subtext hover:text-text disabled:opacity-30 transition-colors"
             >
               <FiPlus size={14} />
@@ -471,7 +506,7 @@ export default function SongViewer({
       <div
         ref={contentRef}
         className="flex-1 overflow-y-auto px-4 py-4 md:px-6 pb-8"
-        style={{ fontSize: `${fontSize}px` }}
+        style={{ fontSize: `${displaySize}px` }}
       >
         {lyricsOnly ? (
           <div className="song-content lyrics-only">
