@@ -15,6 +15,12 @@ import {
 } from "react-icons/fi";
 import YouTubeEmbed from "./YouTubeEmbed";
 
+const MIN_FONT = 10;
+const MAX_FONT = 72;
+// Auto-fit never shrinks past this - on a narrow phone the longest line would
+// otherwise drive the whole song down to single digits. Below it, lines wrap.
+const MIN_FIT_FONT = 14;
+
 function parseSong(content) {
   try {
     const parser = new ChordProParser();
@@ -87,6 +93,8 @@ export default function SongViewer({
   const [fontSize, setFontSize] = useState(16);
   const [autoScroll, setAutoScroll] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  // Fullscreen sizes the text to the widest line; a manual +/- turns this off
+  const [autoFit, setAutoFit] = useState(false);
   const contentRef = useRef(null);
   const containerRef = useRef(null);
   const scrollIntervalRef = useRef(null);
@@ -125,6 +133,95 @@ export default function SongViewer({
     };
   }, [autoScroll]);
 
+  // Largest font size that keeps every line on one row. Measures each rendered
+  // line off-screen at its own weight/style, then scales: text width is linear
+  // in font size, so one pass is enough.
+  const fitFontSize = useCallback(() => {
+    const content = contentRef.current;
+    if (!content) return;
+
+    const cs = getComputedStyle(content);
+    const available =
+      content.clientWidth -
+      parseFloat(cs.paddingLeft) -
+      parseFloat(cs.paddingRight);
+    if (!(available > 0)) return;
+
+    // Chords mode is one <pre>; lyrics mode is a div per line (comments are bold)
+    const lines = [];
+    const pre = content.querySelector("pre.song-content");
+    if (pre) {
+      const style = getComputedStyle(pre);
+      for (const text of pre.textContent.split("\n")) {
+        if (text.trim()) lines.push({ text, style });
+      }
+    } else {
+      for (const el of content.querySelectorAll(".lyrics-line, .comment")) {
+        if (el.textContent.trim())
+          lines.push({ text: el.textContent, style: getComputedStyle(el) });
+      }
+    }
+    if (lines.length === 0) return;
+
+    const ruler = document.createElement("span");
+    ruler.style.cssText =
+      "position:fixed;left:-9999px;top:0;white-space:pre;visibility:hidden;";
+    document.body.appendChild(ruler);
+
+    let widest = 0;
+    let widestAt = 0;
+    for (const { text, style } of lines) {
+      ruler.style.fontFamily = style.fontFamily;
+      ruler.style.fontWeight = style.fontWeight;
+      ruler.style.fontStyle = style.fontStyle;
+      ruler.style.fontSize = style.fontSize;
+      ruler.style.letterSpacing = style.letterSpacing;
+      ruler.textContent = text;
+      const width = ruler.getBoundingClientRect().width;
+      if (width > widest) {
+        widest = width;
+        widestAt = parseFloat(style.fontSize);
+      }
+    }
+    ruler.remove();
+    if (!widest || !widestAt) return;
+
+    const fitted = Math.floor((widestAt * available) / widest);
+    setFontSize(Math.min(MAX_FONT, Math.max(MIN_FIT_FONT, fitted)));
+  }, []);
+
+  // Re-fit on entering fullscreen, and on anything that changes the line widths
+  useEffect(() => {
+    if (!fullscreen || !autoFit) return;
+    let cancelled = false;
+    let raf = 0;
+
+    const run = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (!cancelled) fitFontSize();
+      });
+    };
+
+    // Measure against the real webfont, not the fallback
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!cancelled) run();
+      });
+    } else {
+      run();
+    }
+
+    window.addEventListener("resize", run);
+    window.addEventListener("orientationchange", run);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", run);
+      window.removeEventListener("orientationchange", run);
+    };
+  }, [fullscreen, autoFit, fitFontSize, song?.Id, lyricsOnly]);
+
   // Fullscreen: CSS overlay always, native Fullscreen API when supported
   // (iOS Safari has no Element.requestFullscreen, so the overlay is the fallback).
   const exitFullscreen = useCallback(() => {
@@ -139,6 +236,7 @@ export default function SongViewer({
       exitFullscreen();
     } else {
       containerRef.current?.requestFullscreen?.().catch(() => {});
+      setAutoFit(true);
       setFullscreen(true);
     }
   }, [fullscreen, exitFullscreen]);
@@ -309,8 +407,11 @@ export default function SongViewer({
 
           <div className="flex items-center bg-surface rounded-lg">
             <button
-              onClick={() => setFontSize((s) => Math.max(s - 2, 10))}
-              disabled={fontSize <= 10}
+              onClick={() => {
+                setAutoFit(false);
+                setFontSize((s) => Math.max(s - 2, MIN_FONT));
+              }}
+              disabled={fontSize <= MIN_FONT}
               className="p-1.5 text-subtext hover:text-text disabled:opacity-30 transition-colors"
             >
               <FiMinus size={14} />
@@ -319,8 +420,11 @@ export default function SongViewer({
               {fontSize}
             </span>
             <button
-              onClick={() => setFontSize((s) => Math.min(s + 2, 32))}
-              disabled={fontSize >= 32}
+              onClick={() => {
+                setAutoFit(false);
+                setFontSize((s) => Math.min(s + 2, MAX_FONT));
+              }}
+              disabled={fontSize >= MAX_FONT}
               className="p-1.5 text-subtext hover:text-text disabled:opacity-30 transition-colors"
             >
               <FiPlus size={14} />
@@ -374,7 +478,7 @@ export default function SongViewer({
             {renderLyricsOnly(parsed)}
           </div>
         ) : (
-          <pre className="song-content font-mono text-sm whitespace-pre-wrap leading-relaxed">
+          <pre className="song-content font-mono whitespace-pre-wrap leading-relaxed">
             {renderWithChords(song.content)}
           </pre>
         )}
