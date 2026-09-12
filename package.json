@@ -16,6 +16,7 @@
     "deploy": "git pull --recurse-submodules && npm install && npm run build && pm2 restart pyesa",
     "e2e-api": "node e2e/local-api.mjs",
     "e2e": "node e2e/drive.mjs",
+    "e2e-viewer": "node e2e/viewer.mjs",
     "readme-shots": "node e2e/readme-shots.mjs"
   },
   "dependencies": {
