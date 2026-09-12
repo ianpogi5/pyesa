@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npm run generate-data && vite --host",
+    "dev:https": "npm run generate-data && node scripts/dev-cert.js && PYESA_HTTPS=1 vite --host",
     "build": "npm run generate-data && vite build --mode production",
     "lint": "eslint src/ server/ scripts/",
     "preview": "vite preview",

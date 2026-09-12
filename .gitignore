@@ -34,3 +34,6 @@ public/liturgy.json
 
 # e2e fixture is a fake test song, allow it despite *.sbp
 !e2e/fixtures/*.sbp
+
+# Self-signed dev certs for `npm run dev:https`
+certs/

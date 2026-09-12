@@ -3,6 +3,18 @@ import react from "@vitejs/plugin-react-swc";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import pkg from "./package.json";
+import { readFileSync } from "node:fs";
+import { ensureDevCert } from "./scripts/dev-cert.js";
+
+// PYESA_HTTPS=1 serves dev over https with a self-signed cert. Needed to test
+// anything gated on a secure context (the screen wake lock, notably) from a
+// phone or tablet, since a plain http:// LAN address is not one.
+const https = process.env.PYESA_HTTPS
+  ? (() => {
+      const { key, crt } = ensureDevCert();
+      return { key: readFileSync(key), cert: readFileSync(crt) };
+    })()
+  : undefined;
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -61,6 +73,7 @@ export default defineConfig({
   ],
   server: {
     allowedHosts: true,
+    https,
     // The API only exists in AWS; proxy /api to production during local dev
     // (writes go to the live site — override with PYESA_API_ORIGIN if needed).
     proxy: {
