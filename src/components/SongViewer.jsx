@@ -10,6 +10,8 @@ import {
   FiArrowUp,
   FiPlay,
   FiPause,
+  FiMaximize,
+  FiMinimize,
 } from "react-icons/fi";
 import YouTubeEmbed from "./YouTubeEmbed";
 
@@ -84,9 +86,12 @@ export default function SongViewer({
   const [lyricsOnly, setLyricsOnly] = useState(true);
   const [fontSize, setFontSize] = useState(16);
   const [autoScroll, setAutoScroll] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const contentRef = useRef(null);
+  const containerRef = useRef(null);
   const scrollIntervalRef = useRef(null);
   const touchStart = useRef(null);
+  const wakeLockRef = useRef(null);
 
   const parsed = useMemo(() => parseSong(song?.content), [song?.content]);
 
@@ -119,6 +124,80 @@ export default function SongViewer({
       }
     };
   }, [autoScroll]);
+
+  // Fullscreen: CSS overlay always, native Fullscreen API when supported
+  // (iOS Safari has no Element.requestFullscreen, so the overlay is the fallback).
+  const exitFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    }
+    setFullscreen(false);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (fullscreen) {
+      exitFullscreen();
+    } else {
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+      setFullscreen(true);
+    }
+  }, [fullscreen, exitFullscreen]);
+
+  // Leaving native fullscreen (Esc, browser gesture) drops the overlay too
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFullscreen(false);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // Esc exits the overlay where there is no native fullscreen to leave
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") exitFullscreen();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fullscreen, exitFullscreen]);
+
+  // Keep the screen awake while performing; re-acquire after the tab is hidden
+  useEffect(() => {
+    if (!fullscreen) return;
+    let cancelled = false;
+
+    const acquire = async () => {
+      try {
+        const lock = await navigator.wakeLock?.request("screen");
+        if (cancelled) lock?.release?.().catch(() => {});
+        else wakeLockRef.current = lock;
+      } catch {
+        // unsupported or denied - not fatal
+      }
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") acquire();
+    };
+
+    acquire();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisibility);
+      wakeLockRef.current?.release?.().catch(() => {});
+      wakeLockRef.current = null;
+    };
+  }, [fullscreen]);
+
+  // Never leave the browser stuck in native fullscreen if the viewer unmounts
+  useEffect(
+    () => () => {
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    },
+    [],
+  );
 
   // Touch swipe for navigation
   const handleTouchStart = useCallback((e) => {
@@ -160,23 +239,44 @@ export default function SongViewer({
 
   return (
     <div
-      className="flex flex-col h-full"
+      ref={containerRef}
+      className={
+        fullscreen
+          ? "fixed inset-0 z-[200] flex flex-col bg-base"
+          : "flex flex-col h-full"
+      }
+      style={
+        fullscreen
+          ? {
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }
+          : undefined
+      }
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
       {/* Song header */}
-      <div className="flex-none px-4 pt-3 pb-2 bg-mantle border-b border-surface md:px-6">
-        <h2 className="text-lg font-bold leading-tight md:text-xl">
+      <div
+        className={`flex-none bg-mantle border-b border-surface px-4 md:px-6 ${
+          fullscreen ? "pt-2 pb-1.5" : "pt-3 pb-2"
+        }`}
+      >
+        <h2
+          className={`font-bold leading-tight ${
+            fullscreen ? "text-sm truncate" : "text-lg md:text-xl"
+          }`}
+        >
           {song.name}
         </h2>
-        {(song.subTitle || song.author) && (
+        {!fullscreen && (song.subTitle || song.author) && (
           <p className="text-sm text-subtext mt-0.5">
             {song.subTitle && <span>{song.subTitle}</span>}
             {song.subTitle && song.author && <span> · </span>}
             {song.author && <span>{song.author}</span>}
           </p>
         )}
-        {tags.length > 0 && (
+        {!fullscreen && tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-2">
             {tags.map((tag) => (
               <span
@@ -190,7 +290,11 @@ export default function SongViewer({
         )}
 
         {/* Controls */}
-        <div className="flex items-center gap-1.5 mt-2.5 -mb-0.5 overflow-x-auto">
+        <div
+          className={`flex items-center gap-1.5 -mb-0.5 overflow-x-auto ${
+            fullscreen ? "mt-1.5" : "mt-2.5"
+          }`}
+        >
           <button
             onClick={() => setLyricsOnly(!lyricsOnly)}
             className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
@@ -237,6 +341,19 @@ export default function SongViewer({
           </button>
 
           <button
+            onClick={toggleFullscreen}
+            className={`p-1.5 rounded-lg transition-colors ${
+              fullscreen
+                ? "bg-blue text-base"
+                : "bg-surface text-subtext hover:bg-surface-hover"
+            }`}
+            title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            aria-label={fullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+          >
+            {fullscreen ? <FiMinimize size={14} /> : <FiMaximize size={14} />}
+          </button>
+
+          <button
             onClick={scrollToTop}
             className="p-1.5 bg-surface text-subtext hover:bg-surface-hover rounded-lg transition-colors"
             title="Scroll to top"
@@ -262,7 +379,7 @@ export default function SongViewer({
           </pre>
         )}
 
-        {song.Url && <YouTubeEmbed url={song.Url} />}
+        {!fullscreen && song.Url && <YouTubeEmbed url={song.Url} />}
       </div>
 
       {/* Navigation footer */}
