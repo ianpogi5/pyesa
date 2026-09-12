@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.3.0] - 2026-09-12
+
+## What's Changed
+
+### Features
+- remember chords/lyrics mode and font size across sessions
+- fullscreen performance mode in the song viewer
+
+### Bug Fixes
+- keep Safari's fullscreen close button off the song title
+- font size control did nothing in chords mode; fit text in fullscreen
+
+**Full Changelog**: https://github.com/ianpogi5/pyesa/compare/v2.2.2...v2.3.0
+
+
 ## [2.2.2] - 2026-08-03
 
 ## What's Changed
