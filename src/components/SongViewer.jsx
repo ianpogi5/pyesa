@@ -21,6 +21,9 @@ const MAX_FONT = 72;
 // otherwise drive the whole song down to single digits. Below it, lines wrap.
 const MIN_FIT_FONT = 14;
 const PREFS_KEY = "pyesa-viewer-prefs";
+// Used only for songs with no recorded length. Matches the old fixed rate of
+// one pixel every 50ms, which is all this viewer used to do.
+const FALLBACK_PX_PER_SEC = 20;
 // Safari puts a floating close button in the top-left corner of any element it
 // takes natively fullscreen, right where the title sits. Clear it.
 const NATIVE_FS_GUTTER = 64;
@@ -137,7 +140,7 @@ export default function SongViewer({
   const [wakeLockHeld, setWakeLockHeld] = useState(false);
   const contentRef = useRef(null);
   const containerRef = useRef(null);
-  const scrollIntervalRef = useRef(null);
+  const scrollRafRef = useRef(0);
   const touchStart = useRef(null);
   const wakeLockRef = useRef(null);
 
@@ -165,27 +168,61 @@ export default function SongViewer({
     setAutoScroll(false);
   }, [song?.Id]);
 
-  // Auto-scroll
+  // SongbookPro records a length per song (Duration2, seconds); when we have
+  // one, spread the scroll across it so the text tracks the music. A fixed
+  // pixel rate cannot: enlarging the font makes the same song take longer.
+  const scrollSeconds = Number(song?.Duration2) > 0 ? Number(song.Duration2) : 0;
+
   useEffect(() => {
-    if (autoScroll && contentRef.current) {
-      scrollIntervalRef.current = setInterval(() => {
-        if (contentRef.current) {
-          contentRef.current.scrollTop += 1;
-          // Stop at bottom
-          const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
-          if (scrollTop + clientHeight >= scrollHeight) {
-            setAutoScroll(false);
-          }
-        }
-      }, 50);
-    }
-    return () => {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-        scrollIntervalRef.current = null;
-      }
+    if (!autoScroll) return;
+    const box = contentRef.current;
+    if (!box) return;
+
+    // Scroll to the end of the lyrics, not past them into the video embed.
+    const travelDistance = () => {
+      const content = box.querySelector(".song-content");
+      if (!content) return box.scrollHeight - box.clientHeight;
+      const end =
+        content.getBoundingClientRect().bottom -
+        box.getBoundingClientRect().top +
+        box.scrollTop;
+      return Math.max(0, Math.round(end) - box.clientHeight);
     };
-  }, [autoScroll]);
+
+    let last = performance.now();
+    let position = box.scrollTop;
+
+    const tick = (now) => {
+      const elapsed = (now - last) / 1000;
+      last = now;
+
+      const travel = travelDistance();
+      if (travel <= 0) {
+        setAutoScroll(false);
+        return;
+      }
+
+      // A manual scroll mid-song takes over rather than fighting the animation
+      if (Math.abs(box.scrollTop - position) > 2) position = box.scrollTop;
+
+      // Recomputed every frame so a font change mid-scroll re-paces itself
+      const pxPerSec = scrollSeconds
+        ? travel / scrollSeconds
+        : FALLBACK_PX_PER_SEC;
+
+      position = Math.min(position + pxPerSec * elapsed, travel);
+      box.scrollTop = position;
+
+      if (position >= travel) {
+        setAutoScroll(false);
+        return;
+      }
+      scrollRafRef.current = requestAnimationFrame(tick);
+    };
+
+    scrollRafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(scrollRafRef.current);
+  }, [autoScroll, scrollSeconds]);
 
   // Largest font size that keeps every line on one row. Measures each rendered
   // line off-screen at its own weight/style, then scales: text width is linear
@@ -524,7 +561,11 @@ export default function SongViewer({
                 ? "bg-green text-base"
                 : "bg-surface text-subtext hover:bg-surface-hover"
             }`}
-            title="Auto-scroll"
+            title={
+              scrollSeconds
+                ? `Auto-scroll over ${scrollSeconds}s (song length)`
+                : "Auto-scroll (no length recorded for this song)"
+            }
           >
             {autoScroll ? <FiPause size={12} /> : <FiPlay size={12} />}
             <span className="hidden sm:inline">Scroll</span>
