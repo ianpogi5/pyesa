@@ -21,6 +21,11 @@ export default function SetsPage() {
   const [sets, setSets] = useState([]);
   const [songs, setSongs] = useState([]);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  // Which set is on screen, and which song: a background refresh must not
+  // move the performer, and a late response for a set they already left
+  // must not replace the one they are looking at.
+  const activeFilenameRef = useRef(null);
+  const currentSongIdRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [loadingSongs, setLoadingSongs] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(null); // { current, total } or null
@@ -69,16 +74,18 @@ export default function SetsPage() {
   // Load songs for selected set
   const loadSet = useCallback(async (fname) => {
     if (!fname) return;
+    activeFilenameRef.current = fname;
     setLoadingSongs(true);
     try {
       // Try IndexedDB cache first
       const cached = await getSet(fname);
+      if (activeFilenameRef.current !== fname) return;
       if (cached) {
         setSongs(cached.songs);
         setCurrentSongIndex(0);
         setLoadingSongs(false);
         // Refresh from network in background
-        fetchAndSave(fname);
+        fetchAndSave(fname, { background: true });
         return;
       }
       await fetchAndSave(fname);
@@ -87,18 +94,28 @@ export default function SetsPage() {
     }
   }, []);
 
-  const fetchAndSave = async (fname) => {
+  const fetchAndSave = async (fname, { background = false } = {}) => {
     try {
       const res = await fetch(`/files/mass/${encodeURIComponent(fname)}`);
       const data = await res.json();
       const songList = data.songs || [];
-      setSongs(songList);
-      setCurrentSongIndex(0);
-      setLoadingSongs(false);
-      // Save to IndexedDB
+      // Save to IndexedDB regardless; only touch the screen if still relevant
       await saveSet(fname, songList);
-    } catch {
+      if (activeFilenameRef.current !== fname) return;
+      setSongs(songList);
+      if (background) {
+        // Stay on the same song if it is still in the set
+        const keepId = currentSongIdRef.current;
+        const idx = songList.findIndex((s) => s.Id === keepId);
+        setCurrentSongIndex((i) =>
+          idx >= 0 ? idx : Math.min(i, Math.max(0, songList.length - 1)),
+        );
+      } else {
+        setCurrentSongIndex(0);
+      }
       setLoadingSongs(false);
+    } catch {
+      if (activeFilenameRef.current === fname) setLoadingSongs(false);
     }
   };
 
@@ -152,6 +169,7 @@ export default function SetsPage() {
   const selectedFilename = filename ? decodeURIComponent(filename) : null;
   const activeSet = sets.find((s) => s.filename === selectedFilename);
   const currentSong = songs[currentSongIndex] || null;
+  currentSongIdRef.current = currentSong?.Id ?? null;
 
   // Mobile title
   const mobileTitle =

@@ -58,6 +58,9 @@ export default defineConfig({
             handler: "NetworkFirst",
             options: {
               cacheName: "data-json",
+              // Church wifi: fall back to the cached copy after 3s rather than
+              // hanging on a request that may take a minute to fail
+              networkTimeoutSeconds: 3,
               expiration: {
                 maxEntries: 200,
                 maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days

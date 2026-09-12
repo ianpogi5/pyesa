@@ -16,7 +16,10 @@ export default function BottomTabBar() {
     : baseTabs;
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-mantle border-t border-surface safe-area-bottom">
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-mantle border-t border-surface"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="flex items-center justify-around h-14">
         {tabs.map(({ to, icon: Icon, label }) => (
           <NavLink
